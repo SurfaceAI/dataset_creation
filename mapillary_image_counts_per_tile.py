@@ -49,7 +49,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
 
 with open(out_path, 'w', newline='') as csvfile:
     csvwriter = csv.writer(csvfile)
-    csvwriter.writerow(['tilex', 'tiley', 'zoom', 'lat', 'lon', 'image_count'])
+    csvwriter.writerow(['x', 'y', 'z', 'lat', 'lon', 'image_count'])
     for i in range(0, len(tiles)):
         tile = tiles[i]
         image_count = results[i]

@@ -3,6 +3,10 @@
 data/*
 
 mapillary_token.txt
+database_credentials.py
+
+*.qgz
+*aux.xml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
