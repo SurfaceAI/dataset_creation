@@ -53,7 +53,7 @@ with open(out_path, 'w', newline='') as csvfile:
     for i in range(0, len(tiles)):
         tile = tiles[i]
         image_count = results[i]
-        lat, lon = utils.num2deg(tile.x, tile.y, config.zoom)
+        lon, lat = utils.num2deg(tile.x, tile.y, config.zoom)
         csvwriter.writerow([tile.x, tile.y, config.zoom, lat, lon, image_count])
 
 end = time.time()

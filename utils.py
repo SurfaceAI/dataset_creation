@@ -1,4 +1,5 @@
 import os
+import csv
 import math
 import mercantile
 import config
@@ -20,7 +21,14 @@ def num2deg(xtile, ytile, zoom):
   lon_deg = xtile / n * 360.0 - 180.0
   lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
   lat_deg = math.degrees(lat_rad)
-  return lat_deg, lon_deg
+  return lon_deg,lat_deg
+
+def deg2num(lat_deg, lon_deg, zoom):
+  lat_rad = math.radians(lat_deg)
+  n = 2.0 ** zoom
+  xtile = int((lon_deg + 180.0) / 360.0 * n)
+  ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
+  return xtile, ytile
 
 def get_mapbox_tiles(west, south, east, north, zoom):
     tiles = list(mercantile.tiles(west, south, east, north, zoom))
@@ -79,12 +87,32 @@ def download_image(image_id, image_folder):
     header = {'Authorization' : 'OAuth {}'.format(access_tokens[current_token])}
     url = 'https://graph.mapillary.com/{}?fields={}'.format(image_id, config.image_size)
     response = requests.get(url, headers=header)
-    data = response.json()
-    image_url = data[config.image_size]
+    if response.status_code != 200:
+        print(response.status_code)
+        print(response.reason)
+        print(f"image_id: {image_id}")
+    else:
+        data = response.json()
+        image_url = data[config.image_size]
 
-    # image: save each image with ID as filename to directory by sequence ID
-    image_name = '{}.jpg'.format(image_id)
-    image_path = os.path.join(image_folder, image_name)
-    with open(image_path, 'wb') as handler:
-        image_data = requests.get(image_url, stream=True).content
-        handler.write(image_data)
+        # image: save each image with ID as filename to directory by sequence ID
+        image_name = '{}.jpg'.format(image_id)
+        image_path = os.path.join(image_folder, image_name)
+        with open(image_path, 'wb') as handler:
+            image_data = requests.get(image_url, stream=True).content
+            handler.write(image_data)
+
+
+def query_and_write_img_metadata(tiles, out_path):
+    # write metadata of all potential images to csv
+    with open(out_path, 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        for i in range(0, len(tiles)):
+            if i % 10 == 0:
+                print(f"{i} tiles of {len(tiles)}")
+            tile = tiles.iloc[i,]
+            header, output = get_tile_metadata(tile)
+            if i == 0:
+                csvwriter.writerow(header)
+            for row in output:
+                csvwriter.writerow(row)

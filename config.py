@@ -1,7 +1,9 @@
 germany_tiles_path = 'data/germany_image_counts.csv'
 germany_raster_template = 'data/germany_tile_raster_template.tif'
-germany_raster_image_counts = 'data/germany_tile_raster.tif'
-
+germany_raster_image_counts = 'data/germany_mapillary_counts_raster.tif'
+germany_osmtag_counts = 'data/germany_osmtag_counts.tif'
+autobahn_path = 'data/autobahn.shp'
+filtered_autobahn_path = 'data/{}/autobahn_filtered.geojson'
 # berlin_tiles_path = 'data/berlin_image_counts.csv'
 # berlin_raster_template = 'data/berlin_tile_raster_template.tif'
 # berlin_raster_image_counts = 'data/berlin_tile_raster.tif'
@@ -10,14 +12,18 @@ germany_raster_image_counts = 'data/germany_tile_raster.tif'
 #test_tiles_metadata_path = 'data/test_tiles_metadata.csv'
 #test_image_selection_metadata_path = 'data/testimage_selection_metadata.csv'
 
-test_city_tiles_path = 'data/bamberg/bamberg_city_tiles.csv'
-test_tiles_metadata_path = 'data/bamberg/bamberg_all_images_metadata.csv'
-test_image_selection_metadata_path = 'data/bamberg/bamberg_image_selection_metadata.csv'
-test_image_folder = 'data/bamberg/bamberg_images'
+test_city_tiles_path = 'data/{}/city_tiles.csv'
+test_tiles_metadata_path = 'data/{}/all_images_metadata.csv'
+test_image_selection_metadata_path = 'data/{}/image_selection_metadata.csv'
+test_image_folder = 'data/{}/images'
+test_small_raster_template = 'data/{}/small_raster_template.tif'
+test_small_raster_counts = 'data/{}/small_raster_counts.tif'
 
-bamberg_shape = 'data/bamberg.geojson'
+boundary = 'data/{}/boundary.geojson'
 
 train_tiles_metadata_path = 'data/train_tiles_metadata.csv'
+train_tiles_selection_path = 'data/train_tiles_selection.csv'
+train_image_selection_metadata_path = 'data/train_image_selection_metadata.csv'
 
 token_path = 'mapillary_token.txt'
 
@@ -36,13 +42,17 @@ bbox_germany = [
 ]
 
 # test cities
-bbox_luenburg = [10.324,53.191,10.542,53.295]
-bbox_cologne = [6.768,50.865,7.161,51.084]
-bbox_bamberg = [10.828,49.842,10.96,49.951]
-bbox_heilbronn = [9.04,49.094,9.303,49.21]
-bbox_dresden = [13.57,51.002,13.97,51.18]
+# bbox_luenburg = [10.324,53.191,10.542,53.295]
+# bbox_cologne = [6.768,50.865,7.161,51.084]
+# bbox_bamberg = [10.828,49.842,10.96,49.951]
+# bbox_heilbronn = [9.04,49.094,9.303,49.21]
+# bbox_dresden = [13.57,51.002,13.97,51.18]
 
-# timestamp filter 1.1.2021
-time_filter_unix = 1640995200000
+# timestamp filter 1.6.2021
+time_filter_unix = 1609891200000
 max_img_per_sequence = 10
-max_img_per_tile = 200
+max_img_per_cell = 5
+
+# training tiles
+min_images = 500
+min_tags = 50
