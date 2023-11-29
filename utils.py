@@ -93,15 +93,17 @@ def download_image(image_id, image_folder):
         print(f"image_id: {image_id}")
     else:
         data = response.json()
-        image_url = data[config.image_size]
+        if config.image_size in data:
+            image_url = data[config.image_size]
 
-        # image: save each image with ID as filename to directory by sequence ID
-        image_name = '{}.jpg'.format(image_id)
-        image_path = os.path.join(image_folder, image_name)
-        with open(image_path, 'wb') as handler:
-            image_data = requests.get(image_url, stream=True).content
-            handler.write(image_data)
-
+            # image: save each image with ID as filename to directory by sequence ID
+            image_name = '{}.jpg'.format(image_id)
+            image_path = os.path.join(image_folder, image_name)
+            with open(image_path, 'wb') as handler:
+                image_data = requests.get(image_url, stream=True).content
+                handler.write(image_data)
+        else:
+            print(f"no image size {config.image_size} for image {image_id}")
 
 def query_and_write_img_metadata(tiles, out_path):
     # write metadata of all potential images to csv

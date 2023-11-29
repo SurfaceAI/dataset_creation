@@ -50,9 +50,10 @@ bbox_germany = [
 
 # timestamp filter 1.6.2021
 time_filter_unix = 1609891200000
-max_img_per_sequence = 10
+max_img_per_sequence_test = 10
 max_img_per_cell = 5
 
 # training tiles
+max_img_per_sequence_training = 5
 min_images = 500
 min_tags = 50

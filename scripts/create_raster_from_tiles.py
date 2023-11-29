@@ -1,10 +1,12 @@
-import math
 import pandas as pd
 import numpy as np
 from shapely.geometry import Point
 import geopandas as gpd
-import rpy2.robjects as robjects
-import config
+
+# setting path
+import sys
+sys.path.append('./')
+
 import utils
 import raster_functions as rf
 
@@ -18,8 +20,8 @@ import raster_functions as rf
 # output_path = config.germany_raster_image_counts
 
 input_path = 'data/berlin_image_counts.csv'
-template_output_path = 'data/berlin_tile_raster_templatexx.tif'
-output_path = 'data/berlin_tile_rasterxx.tif'
+template_output_path = 'data/berlin_tile_raster_template.tif'
+output_path = 'data/berlin_tile_raster.tif'
 # -------------
 
 df = pd.read_csv(input_path)
