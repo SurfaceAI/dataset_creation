@@ -89,7 +89,8 @@ def rasterize_points(raster_path, data_path, crs, output_path, fun="max"):
     robjects.r("""
 
     rasterize_points <- function(raster_path, data_path, crs, output_path, fun){
-
+        library(sf)
+               
         raster_template <- terra::rast(raster_path)
         data <- readr::read_csv(data_path, show_col_types = F)|> 
             st_as_sf( coords = c("lon", "lat"), crs = 4326)|> 

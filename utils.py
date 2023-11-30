@@ -30,6 +30,11 @@ def deg2num(lat_deg, lon_deg, zoom):
   ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
   return xtile, ytile
 
+def tile_bbox(xtile, ytile, zoom):
+    west, north = num2deg(xtile - 0.5, ytile - 0.5, zoom)
+    east, south = num2deg(xtile + 0.5, ytile + 0.5, zoom)
+    return west, south, east, north
+
 def get_mapbox_tiles(west, south, east, north, zoom):
     tiles = list(mercantile.tiles(west, south, east, north, zoom))
     return tiles

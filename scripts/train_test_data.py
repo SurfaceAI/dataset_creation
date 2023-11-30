@@ -11,12 +11,22 @@
 import os
 import time
 import csv
-import utils
-import config
+import psycopg2
+from psycopg2 import sql
+from psycopg2.extras import DictCursor
+
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Point
+
+import sys
+# setting path
+sys.path.append('./')
+
+import utils
+import config
 import raster_functions as rf
+import database_credentials as db
 
 # store all tiles that cover the test cities in a csv file (#1)
 
@@ -68,11 +78,12 @@ def create_test_data(cities):
             xmin, ymin, xmax, ymax = gdf.total_bounds
             rf.create_raster(int(xmin), int(xmax), int(ymin), int(ymax), "epsg:3035", 
                              config.test_small_raster_template.format(city), resolution=100)
-            # rf.rasterize_points(config.test_small_raster_template, 
-            #                     config.test_tiles_metadata_path, 
-            #                     3035, 
-            #                     config.test_small_raster_counts, 
-            #                     "sum")
+            
+            # rf.rasterize_points(config.test_small_raster_template.format(city), 
+            #                 config.test_tiles_metadata_path.format(city), 
+            #                 3035, 
+            #                 config.test_small_raster_counts.format(city), 
+            #                 "sum")
 
             rf.raster_ids_for_points(config.test_small_raster_template.format(city), 
                                     config.test_tiles_metadata_path.format(city), 
@@ -80,7 +91,6 @@ def create_test_data(cities):
                                     3035)
         else:
             print(f"small raster template already created ({config.test_small_raster_template.format(city)}), step is skipped")
-
 
         if not os.path.exists(config.test_image_selection_metadata_path.format(city)):
             # filter by year
@@ -161,6 +171,7 @@ def create_test_data(cities):
 
 def create_training_data(cities):
 
+    ## combine with OSM tags
     #   - exclude all tiles of test data cities
     
     if not os.path.exists(config.train_tiles_selection_path):
@@ -197,9 +208,30 @@ def create_training_data(cities):
     if not os.path.exists(config.train_tiles_metadata_path):
         tiles = pd.read_csv(config.train_tiles_selection_path)
         utils.query_and_write_img_metadata(tiles, config.train_tiles_metadata_path)
+
+        print("write mapillary metadata to database")
+        # write metadata to database
+        with open('scripts/mapillary_meta_to_database.sql', 'r') as file:
+            query = file.read()
+
+        # Connect to your PostgreSQL database
+        conn = psycopg2.connect(
+            dbname=db.database,
+            user=db.user,
+            host=db.host,
+        )
+        # Execute the query
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            absolute_path = os.path.join(os.getcwd(), config.train_tiles_metadata_path)
+            cursor.execute(sql.SQL(query.format(absolute_path)))
+            conn.commit()   
+        conn.close() 
+
+
     else:
         print(f"tile metadata already queried ({config.train_tiles_metadata_path}), step is skipped")
 
+    # TODO: this after intersection or before?
     if not os.path.exists(config.train_image_selection_metadata_path):
         # 4. filtering
         metadata = pd.read_csv(config.train_tiles_metadata_path, dtype={"id":int})
@@ -213,7 +245,8 @@ def create_training_data(cities):
         # Only select one random image from each sequence
         metadata = (metadata
                     .groupby("sequence_id")
-                    .sample(config.max_img_per_sequence_training, random_state=1, replace=True,))
+                    .sample(config.max_img_per_sequence_training, random_state=1, replace=True,)
+                    .drop_duplicates(subset="id"))
         # 44.733 sequences
         print(f"img count after sampling by sequence_id {len(metadata)}")
 
@@ -221,12 +254,48 @@ def create_training_data(cities):
     else:
         print(f"metadata of selected images already queried ({config.train_image_selection_metadata_path}), step is skipped")
 
-        ## 2 to make sure, surface / smoothness combinations are all represented, select top 10 tiles for each combination 
+    
+    # for each tile, SQL query of intersecting ways with surface / smoothness tags
+    tiles = pd.read_csv(config.train_tiles_selection_path)
+    tile_ids = tiles["x"].astype(str) + "_" + tiles["y"].astype(str) + "_" + tiles["z"].astype(str)
+
+    start = time.time()
+    print(f"{len(tile_ids.unique())} tiles to intersect with OSM")
+    for tile_id in tile_ids.unique()[100:]:
+
+        start_query = time.time()
+        tilex, tiley, zoom = str.split(tile_id, "_")
+        tile_bbox = utils.tile_bbox(int(tilex), int(tiley), int(zoom))
+        with open('scripts/intersect_osm_mapillary.sql', 'r') as file:
+            query = file.read()
+        
+        # TODO: cut off at intersections
+        query = query.format(tile_bbox[0], tile_bbox[1], tile_bbox[2], tile_bbox[3],
+                                    tile_bbox[0], tile_bbox[1], tile_bbox[2], tile_bbox[3])
+        
+        # Connect to your PostgreSQL database
+        conn = psycopg2.connect(
+            dbname=db.database,
+            user=db.user,
+            host=db.host,
+        )
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            cursor.execute(sql.SQL(query))
+            conn.commit()  
+        end_query = time.time()
+        print(f"{tile_id} took {(round(end_query-start_query))} secs for intersection")
+
+    conn.close() 
+    end = time.time()
+    print(f"{round((end-start) / 60)} mins to intersect all selected test tiles")
+    # 10 Mio images and 1000 tiles take 2,8 hours
+
+    ## 2) to make sure, surface / smoothness combinations are all represented, select top 10 tiles for each combination 
 
 
 if __name__ == "__main__":
 
-    cities = ["dresden"]
-    create_test_data(cities)
-    #cities = ["cologne", "muenchen", "dresden", "heilbronn", "lueneburg"]
-    #create_training_data(cities)
+    #cities = ["heilbronn", "lueneburg"]
+    #create_test_data(cities)
+    cities = ["cologne", "muenchen", "dresden", "heilbronn", "lueneburg"]
+    create_training_data(cities)

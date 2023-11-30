@@ -24,6 +24,7 @@ boundary = 'data/{}/boundary.geojson'
 train_tiles_metadata_path = 'data/train_tiles_metadata.csv'
 train_tiles_selection_path = 'data/train_tiles_selection.csv'
 train_image_selection_metadata_path = 'data/train_image_selection_metadata.csv'
+train_image_folder = 'data/train_images'
 
 token_path = 'mapillary_token.txt'
 
@@ -54,6 +55,20 @@ max_img_per_sequence_test = 10
 max_img_per_cell = 5
 
 # training tiles
-max_img_per_sequence_training = 5
+max_img_per_sequence_training = 10
 min_images = 500
 min_tags = 50
+
+imgs_per_class = 120
+EXCELLENT = "excellent"
+GOOD = "good"
+INTERMEDIATE = "intermediate"
+BAD = "bad"
+VERY_BAD = "very_bad"
+HORRIBLE = "horrible"
+
+ASPHALT = 'asphalt'
+CONCRETE = 'concrete'
+SETT = 'sett'
+UNPAVED = 'unpaved'
+PAVING_STONES = 'paving_stones'
