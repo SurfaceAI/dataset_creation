@@ -1,5 +1,6 @@
 
 drop table if exists mapillary_meta ;
+
 CREATE TABLE mapillary_meta (
 	tile_id char(20),
     id bigint,

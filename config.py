@@ -25,6 +25,7 @@ train_tiles_metadata_path = 'data/train_tiles_metadata.csv'
 train_tiles_selection_path = 'data/train_tiles_selection.csv'
 train_image_selection_metadata_path = 'data/train_image_selection_metadata.csv'
 train_image_folder = 'data/train_images'
+train_image_metadata_with_tags_path = "data/img_metadata_with_tags.csv"
 
 token_path = 'mapillary_token.txt'
 

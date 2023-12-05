@@ -56,9 +56,13 @@ and (ways_selection.tags -> 'smoothness' <> '' or ways_selection.tags -> 'cyclew
 
 
 
--- create buffer of 5 meters -> now its polygons instead of linestrings --
+-- cut off 10% of start and ends of roads --
 update way_geometry 
-set geom = ST_Buffer(geom, 5);
+set geom = ST_LineSubstring(geom, 0.1, 0.9);
+
+-- create buffer of x meters -> now its polygons instead of linestrings --
+update way_geometry 
+set geom = ST_Buffer(geom, 1);
 
 
 -------------- intersect with mapillary -----------------

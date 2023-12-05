@@ -231,37 +231,14 @@ def create_training_data(cities):
     else:
         print(f"tile metadata already queried ({config.train_tiles_metadata_path}), step is skipped")
 
-    # TODO: this after intersection or before?
-    if not os.path.exists(config.train_image_selection_metadata_path):
-        # 4. filtering
-        metadata = pd.read_csv(config.train_tiles_metadata_path, dtype={"id":int})
-        # about 10 mio images in 1000 selected tiles
 
-        # filter images after year 2022. 
-        metadata = metadata[metadata["captured_at"] >= config.time_filter_unix]
-        # 4.602.584 images after 1.6.2021
-        print(f"img count after sampling by date {len(metadata)}")
-        
-        # Only select one random image from each sequence
-        metadata = (metadata
-                    .groupby("sequence_id")
-                    .sample(config.max_img_per_sequence_training, random_state=1, replace=True,)
-                    .drop_duplicates(subset="id"))
-        # 44.733 sequences
-        print(f"img count after sampling by sequence_id {len(metadata)}")
-
-        metadata.to_csv(config.train_image_selection_metadata_path, index=False)
-    else:
-        print(f"metadata of selected images already queried ({config.train_image_selection_metadata_path}), step is skipped")
-
-    
     # for each tile, SQL query of intersecting ways with surface / smoothness tags
     tiles = pd.read_csv(config.train_tiles_selection_path)
     tile_ids = tiles["x"].astype(str) + "_" + tiles["y"].astype(str) + "_" + tiles["z"].astype(str)
 
     start = time.time()
     print(f"{len(tile_ids.unique())} tiles to intersect with OSM")
-    for tile_id in tile_ids.unique()[100:]:
+    for tile_id in tile_ids.unique()[200:500]:
 
         start_query = time.time()
         tilex, tiley, zoom = str.split(tile_id, "_")
@@ -269,7 +246,6 @@ def create_training_data(cities):
         with open('scripts/intersect_osm_mapillary.sql', 'r') as file:
             query = file.read()
         
-        # TODO: cut off at intersections
         query = query.format(tile_bbox[0], tile_bbox[1], tile_bbox[2], tile_bbox[3],
                                     tile_bbox[0], tile_bbox[1], tile_bbox[2], tile_bbox[3])
         
@@ -285,10 +261,32 @@ def create_training_data(cities):
         end_query = time.time()
         print(f"{tile_id} took {(round(end_query-start_query))} secs for intersection")
 
-    conn.close() 
     end = time.time()
     print(f"{round((end-start) / 60)} mins to intersect all selected test tiles")
+        
+    with open('scripts/save_db_to_csv.sql', 'r') as file:
+        query = file.read()
+    absolute_path = os.path.join(os.getcwd(), config.train_image_metadata_with_tags_path)
+        # Connect to your PostgreSQL database
+    with conn.cursor(cursor_factory=DictCursor) as cursor:
+        cursor.execute(sql.SQL(query.format(absolute_path)))
+        conn.commit()  
+    conn.close() 
+    print("csv exported from db")
     # 10 Mio images and 1000 tiles take 2,8 hours
+
+    # further filter data
+    if not os.path.exists(config.train_image_selection_metadata_path):
+        metadata = pd.read_csv(config.train_image_metadata_with_tags_path)
+
+        # TODO: copy code in here
+
+        print(f"img count after filtering and sampling {len(metadata)}")
+
+        metadata.to_csv(config.train_image_selection_metadata_path, index=False)
+    else:
+        print(f"training images already selected ({config.train_image_selection_metadata_path}), step is skipped")
+
 
     ## 2) to make sure, surface / smoothness combinations are all represented, select top 10 tiles for each combination 
 
