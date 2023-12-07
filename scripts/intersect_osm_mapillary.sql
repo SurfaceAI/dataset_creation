@@ -28,7 +28,7 @@ JOIN node_selection ON way_nodes.node_id = node_selection.id;
 CREATE INDEX way_nodes_selection_idx ON way_nodes_selection USING GIST(geom);
 
 create table ways_selection as
-select ways.* 
+select distinct ways.* 
 from ways
 JOIN way_nodes_selection ON ways.id = way_nodes_selection.way_id;
 
@@ -60,9 +60,9 @@ and (ways_selection.tags -> 'smoothness' <> '' or ways_selection.tags -> 'cyclew
 update way_geometry 
 set geom = ST_LineSubstring(geom, 0.1, 0.9);
 
--- create buffer of x meters -> now its polygons instead of linestrings --
-update way_geometry 
-set geom = ST_Buffer(geom, 1);
+-- -- create buffer of x meters -> now its polygons instead of linestrings --
+-- update way_geometry 
+-- set geom = ST_Buffer(geom, 1);
 
 
 -------------- intersect with mapillary -----------------
@@ -85,10 +85,18 @@ drop table if exists mapillary_selection_labeled;
 
 -- create new table as this is faster than update --
  CREATE TABLE mapillary_selection_labeled AS (
-  SELECT mp.id, wg.surface, wg.smoothness, wg.highway, wg.cycleway, wg.cycleway_surface, wg.cycleway_smoothness, wg.cycleway_right, wg.cycleway_right_surface, wg.cycleway_right_smoothness, wg.cycleway_left, wg.cycleway_left_surface, wg.cycleway_left_smoothness
+  SELECT mp.id, wg.id as way_id, wg.surface, wg.smoothness, wg.highway, wg.cycleway, wg.cycleway_surface, wg.cycleway_smoothness, wg.cycleway_right, 
+  wg.cycleway_right_surface, wg.cycleway_right_smoothness, wg.cycleway_left, wg.cycleway_left_surface, wg.cycleway_left_smoothness,
+  ST_Distance(st_transform(mp.geom, 3035), wg.geom) AS distance,
+    ROW_NUMBER() OVER (PARTITION BY mp.id ORDER BY ST_Distance(st_transform(mp.geom, 3035), wg.geom)) AS row_num
   FROM mapillary_selection mp
-  JOIN way_geometry wg ON ST_Within(st_transform(mp.geom, 3035), wg.geom)
+  inner join way_geometry wg ON ST_Distance(st_transform(mp.geom, 3035), wg.geom) < 2
 );
+
+-- Delete duplicate image ids -> maintain the one with the smallest distance
+DELETE FROM mapillary_selection_labeled
+WHERE row_num != 1;
+
 
 UPDATE mapillary_meta
 SET surface = mapillary_selection_labeled.surface,
@@ -102,6 +110,22 @@ cycleway_right_surface = mapillary_selection_labeled.cycleway_right_surface,
 cycleway_right_smoothness = mapillary_selection_labeled.cycleway_right_smoothness,
 cycleway_left = mapillary_selection_labeled.cycleway_left,
 cycleway_left_surface = mapillary_selection_labeled.cycleway_left_surface,
-cycleway_left_smoothness = mapillary_selection_labeled.cycleway_left_smoothness
+cycleway_left_smoothness = mapillary_selection_labeled.cycleway_left_smoothness,
+distance= mapillary_selection_labeled.distance
 FROM mapillary_selection_labeled
 WHERE mapillary_meta.id = mapillary_selection_labeled.id;
+
+
+-- ALTER TABLE mapillary_meta
+-- DROP COLUMN IF EXISTS surface,
+-- DROP COLUMN IF EXISTS smoothness,
+-- DROP COLUMN IF EXISTS highway,
+-- DROP COLUMN IF EXISTS cycleway,
+-- DROP COLUMN IF EXISTS cycleway_surface,
+-- DROP COLUMN IF EXISTS cycleway_smoothness,
+-- DROP COLUMN IF EXISTS cycleway_right,
+-- DROP COLUMN IF EXISTS cycleway_right_surface,
+-- DROP COLUMN IF EXISTS cycleway_right_smoothness,
+-- DROP COLUMN IF EXISTS cycleway_left,
+-- DROP COLUMN IF EXISTS cycleway_left_surface,
+-- DROP COLUMN IF EXISTS cycleway_left_smoothness;

@@ -28,6 +28,8 @@ ALTER TABLE mapillary_meta ADD COLUMN cycleway_right_smoothness char(50);
 ALTER TABLE mapillary_meta ADD COLUMN cycleway_left char(50);
 ALTER TABLE mapillary_meta ADD COLUMN cycleway_left_surface char(50);
 ALTER TABLE mapillary_meta ADD COLUMN cycleway_left_smoothness char(50);
+ALTER TABLE mapillary_meta ADD COLUMN distance int;
+
 
 -- Add a new geometry column
 ALTER TABLE mapillary_meta ADD COLUMN geom geometry(Point, 4326);

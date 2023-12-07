@@ -23,14 +23,15 @@ boundary = 'data/{}/boundary.geojson'
 
 train_tiles_metadata_path = 'data/train_tiles_metadata.csv'
 train_tiles_selection_path = 'data/train_tiles_selection.csv'
-train_image_selection_metadata_path = 'data/train_image_selection_metadata.csv'
-train_image_folder = 'data/train_images'
-train_image_metadata_with_tags_path = "data/img_metadata_with_tags.csv"
+train_image_selection_metadata_path = 'data/{}_train_image_selection_metadata.csv'
+train_image_folder = 'data/{}_train_images'
+train_image_metadata_with_tags_path = "data/{}_img_metadata_with_tags.csv"
 
 token_path = 'mapillary_token.txt'
 
 ## global mapillary settings
 mapillary_tile_url = 'https://tiles.mapillary.com/maps/vtp/{}/2/{}/{}/{}'
+mapillary_graph_url = 'https://graph.mapillary.com/{}'
 tile_coverage = 'mly1_public'
 tile_layer = "image" #"overview"
 zoom = 14
@@ -55,8 +56,8 @@ time_filter_unix = 1609891200000
 max_img_per_sequence_test = 10
 max_img_per_cell = 5
 
-# training tiles
-max_img_per_sequence_training = 10
+# training images
+max_img_per_sequence_training = 5
 min_images = 500
 min_tags = 50
 

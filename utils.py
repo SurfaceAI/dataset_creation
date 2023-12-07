@@ -89,9 +89,12 @@ def get_tile_metadata(tile):
     return (header, output)
 
 def download_image(image_id, image_folder):
-    header = {'Authorization' : 'OAuth {}'.format(access_tokens[current_token])}
-    url = 'https://graph.mapillary.com/{}?fields={}'.format(image_id, config.image_size)
-    response = requests.get(url, headers=header)
+    response = requests.get(
+        config.mapillary_graph_url.format(image_id),
+        params={'fields': config.image_size,
+            'access_token': access_tokens[current_token]},
+    )
+
     if response.status_code != 200:
         print(response.status_code)
         print(response.reason)

@@ -169,7 +169,7 @@ def create_test_data(cities):
 # 7. then download images
 
 
-def create_training_data(cities):
+def create_training_data(cities, train_data_version):
 
     ## combine with OSM tags
     #   - exclude all tiles of test data cities
@@ -238,7 +238,7 @@ def create_training_data(cities):
 
     start = time.time()
     print(f"{len(tile_ids.unique())} tiles to intersect with OSM")
-    for tile_id in tile_ids.unique()[200:500]:
+    for tile_id in tile_ids.unique()[200:1000]:
 
         start_query = time.time()
         tilex, tiley, zoom = str.split(tile_id, "_")
@@ -266,7 +266,7 @@ def create_training_data(cities):
         
     with open('scripts/save_db_to_csv.sql', 'r') as file:
         query = file.read()
-    absolute_path = os.path.join(os.getcwd(), config.train_image_metadata_with_tags_path)
+    absolute_path = os.path.join(os.getcwd(), config.train_image_metadata_with_tags_path.format(train_data_version))
         # Connect to your PostgreSQL database
     with conn.cursor(cursor_factory=DictCursor) as cursor:
         cursor.execute(sql.SQL(query.format(absolute_path)))
@@ -275,17 +275,17 @@ def create_training_data(cities):
     print("csv exported from db")
     # 10 Mio images and 1000 tiles take 2,8 hours
 
-    # further filter data
-    if not os.path.exists(config.train_image_selection_metadata_path):
-        metadata = pd.read_csv(config.train_image_metadata_with_tags_path)
+    # # further filter data
+    # if not os.path.exists(config.train_image_selection_metadata_path.format(train_data_version)):
+    #     metadata = pd.read_csv(config.train_image_metadata_with_tags_path.format(train_data_version))
 
-        # TODO: copy code in here
+    #     # TODO: copy code in here
 
-        print(f"img count after filtering and sampling {len(metadata)}")
+    #     print(f"img count after filtering and sampling {len(metadata)}")
 
-        metadata.to_csv(config.train_image_selection_metadata_path, index=False)
-    else:
-        print(f"training images already selected ({config.train_image_selection_metadata_path}), step is skipped")
+    #     metadata.to_csv(config.train_image_selection_metadata_path.format(train_data_version), index=False)
+    # else:
+    #     print(f"training images already selected ({config.train_image_selection_metadata_path}), step is skipped")
 
 
     ## 2) to make sure, surface / smoothness combinations are all represented, select top 10 tiles for each combination 
@@ -296,4 +296,4 @@ if __name__ == "__main__":
     #cities = ["heilbronn", "lueneburg"]
     #create_test_data(cities)
     cities = ["cologne", "muenchen", "dresden", "heilbronn", "lueneburg"]
-    create_training_data(cities)
+    create_training_data(cities, "v3")
