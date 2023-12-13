@@ -27,6 +27,11 @@ train_image_selection_metadata_path = 'data/{}_train_image_selection_metadata.cs
 train_image_folder = 'data/{}_train_images'
 train_image_metadata_with_tags_path = "data/{}_img_metadata_with_tags.csv"
 
+
+sql_script_intersect_osm_mapillary_path = 'scripts/intersect_osm_mapillary.sql'
+sql_script_save_db_to_csv_path = 'scripts/save_db_to_csv.sql'
+mapillary_meta_to_database_path = 'scripts/mapillary_meta_to_database.sql'
+
 token_path = 'mapillary_token.txt'
 
 ## global mapillary settings
@@ -57,20 +62,14 @@ max_img_per_sequence_test = 10
 max_img_per_cell = 5
 
 # training images
+training_data_version = "v3"
 max_img_per_sequence_training = 5
 min_images = 500
 min_tags = 50
 
-imgs_per_class = 120
-EXCELLENT = "excellent"
-GOOD = "good"
-INTERMEDIATE = "intermediate"
-BAD = "bad"
-VERY_BAD = "very_bad"
-HORRIBLE = "horrible"
+imgs_per_class = 1200
 
-ASPHALT = 'asphalt'
-CONCRETE = 'concrete'
-SETT = 'sett'
-UNPAVED = 'unpaved'
-PAVING_STONES = 'paving_stones'
+
+##labelstudio
+# TODO: only temp
+labelstudio_absolute_path = "http://localhost:8080/data/local-files/?d=Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}"

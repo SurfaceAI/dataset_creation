@@ -25,6 +25,7 @@ sys.path.append('./')
 
 import utils
 import config
+import constants as const
 import raster_functions as rf
 import database_credentials as db
 
@@ -211,7 +212,7 @@ def create_training_data(cities, train_data_version):
 
         print("write mapillary metadata to database")
         # write metadata to database
-        with open('scripts/mapillary_meta_to_database.sql', 'r') as file:
+        with open(config.mapillary_meta_to_database_path, 'r') as file:
             query = file.read()
 
         # Connect to your PostgreSQL database
@@ -223,7 +224,7 @@ def create_training_data(cities, train_data_version):
         # Execute the query
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             absolute_path = os.path.join(os.getcwd(), config.train_tiles_metadata_path)
-            cursor.execute(sql.SQL(query.format(absolute_path)))
+            cursor.execute(sql.SQL(query.format("mapillary_meta", "mapillary_meta", absolute_path, "mapillary_meta", "mapillary_meta")))
             conn.commit()   
         conn.close() 
 
@@ -238,33 +239,13 @@ def create_training_data(cities, train_data_version):
 
     start = time.time()
     print(f"{len(tile_ids.unique())} tiles to intersect with OSM")
-    for tile_id in tile_ids.unique()[200:1000]:
-
-        start_query = time.time()
-        tilex, tiley, zoom = str.split(tile_id, "_")
-        tile_bbox = utils.tile_bbox(int(tilex), int(tiley), int(zoom))
-        with open('scripts/intersect_osm_mapillary.sql', 'r') as file:
-            query = file.read()
+    for tile_id in tile_ids.unique():
+        utils.intersect_mapillary_osm(tile_id, "mapillary_meta")
         
-        query = query.format(tile_bbox[0], tile_bbox[1], tile_bbox[2], tile_bbox[3],
-                                    tile_bbox[0], tile_bbox[1], tile_bbox[2], tile_bbox[3])
-        
-        # Connect to your PostgreSQL database
-        conn = psycopg2.connect(
-            dbname=db.database,
-            user=db.user,
-            host=db.host,
-        )
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(sql.SQL(query))
-            conn.commit()  
-        end_query = time.time()
-        print(f"{tile_id} took {(round(end_query-start_query))} secs for intersection")
-
     end = time.time()
     print(f"{round((end-start) / 60)} mins to intersect all selected test tiles")
         
-    with open('scripts/save_db_to_csv.sql', 'r') as file:
+    with open(config.sql_script_save_db_to_csv_path, 'r') as file:
         query = file.read()
     absolute_path = os.path.join(os.getcwd(), config.train_image_metadata_with_tags_path.format(train_data_version))
         # Connect to your PostgreSQL database
@@ -295,5 +276,5 @@ if __name__ == "__main__":
 
     #cities = ["heilbronn", "lueneburg"]
     #create_test_data(cities)
-    cities = ["cologne", "muenchen", "dresden", "heilbronn", "lueneburg"]
+    cities = [const.COLOGNE, const.MUNICH, const.DRESDEN, const.HEILBRONN, const.LUENEBURG]
     create_training_data(cities, "v3")

@@ -5,6 +5,12 @@ import mercantile
 import config
 import requests 
 from vt2geojson.tools import vt_bytes_to_geojson
+import time
+import psycopg2
+from psycopg2 import sql
+from psycopg2.extras import DictCursor
+
+import database_credentials as db
 
 # set access tokens
 with open(config.token_path, 'r') as file:
@@ -126,3 +132,29 @@ def query_and_write_img_metadata(tiles, out_path):
                 csvwriter.writerow(header)
             for row in output:
                 csvwriter.writerow(row)
+
+
+def intersect_mapillary_osm(tile_id, table_name):
+    start_query = time.time()
+    
+    tilex, tiley, zoom = str.split(tile_id, "_")
+    tile_bbox = tile_bbox(int(tilex), int(tiley), int(zoom))
+    with open(config.sql_script_intersect_osm_mapillary_path, 'r') as file:
+        query = file.read()
+    
+    query = query.format(tile_bbox[0], tile_bbox[1], tile_bbox[2], tile_bbox[3],
+                                tile_bbox[0], tile_bbox[1], tile_bbox[2], tile_bbox[3],
+                                table_name, table_name, table_name, table_name)
+    
+    # Connect to your PostgreSQL database
+    conn = psycopg2.connect(
+        dbname=db.database,
+        user=db.user,
+        host=db.host,
+    )
+    with conn.cursor(cursor_factory=DictCursor) as cursor:
+        cursor.execute(sql.SQL(query))
+        conn.commit()  
+
+    end_query = time.time()
+    print(f"{tile_id} took {(round(end_query-start_query))} secs for intersection")

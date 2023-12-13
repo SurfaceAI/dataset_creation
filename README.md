@@ -101,3 +101,20 @@ First test with Berlin data. See [script](https://github.com/SurfaceAI/internal_
 - remove images at night (only between 8am and 6pm)
 
 
+**V4**
+
+
+- sample from entire Germany.
+- sampling of 1000 random tiles with > 500 img per tile and  50 tagged roads
+- distance < 2 meters - then take *closest* road to img, if img intersects with multiple roads, not *random* road
+- 10% cut off at intersections (start and end of roads)
+- no filter by date
+- max 5 images per sequence
+- about **1000** images per class
+- no panorama images
+- filter, only relevant classes:
+  - asphalt / concrete / paving_stones: excellent, good, intermediate, bad
+  - sett: good, intermediate, bad
+  - unpaved: intermediate, bad, very_bad
+- **do not** remove images in winter (dec, jan, feb) **> such that they can be included in the "no classification possible class**
+- **do not** remove images at night (only between 8am and 6pm) **> such that they can be included in the "no classification possible class**
