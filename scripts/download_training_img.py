@@ -36,9 +36,7 @@ metadata["surface_clean"] = metadata["surface_clean"].replace('concrete:plates',
 # drop everything not in the defined surface list
 # TODO: good sett
 surfaces = [const.ASPHALT, const.CONCRETE, const.PAVING_STONES, const.SETT, const.UNPAVED]
-surfaces = [const.SETT]
 smoothnesses = [const.EXCELLENT, const.GOOD, const.INTERMEDIATE, const.BAD, const.VERY_BAD]
-smoothnesses = [const.GOOD]
 #metadata = metadata[metadata["surface_clean"].isin(surfaces)]
 #metadata = metadata[metadata["smoothness"].isin(smoothnesses)]
 
