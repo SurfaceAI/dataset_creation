@@ -10,7 +10,7 @@ import constants as const
 import utils
 
 
-version = "v4"
+version = config.training_data_version
 
 metadata = pd.read_csv(config.train_image_metadata_with_tags_path.format(version))
 
@@ -34,7 +34,6 @@ metadata["surface_clean"] = metadata["surface_clean"].replace(['cobblestone', 'u
 metadata["surface_clean"] = metadata["surface_clean"].replace('concrete:plates', 'concrete')
 
 # drop everything not in the defined surface list
-# TODO: good sett
 surfaces = [const.ASPHALT, const.CONCRETE, const.PAVING_STONES, const.SETT, const.UNPAVED]
 smoothnesses = [const.EXCELLENT, const.GOOD, const.INTERMEDIATE, const.BAD, const.VERY_BAD]
 #metadata = metadata[metadata["surface_clean"].isin(surfaces)]

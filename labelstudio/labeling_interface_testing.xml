@@ -1,0 +1,67 @@
+<View>
+  <Header value="Select the correct label:" />
+  <Image name="image" value="$image" width="60%"/>
+  
+  <Header value="Car / Undefined" />
+  
+  <Choices name="surface" toName="image" showInline="true">
+    <Choice value="asphalt"/>
+    <Choice value="concrete"/>
+	<Choice value="paving_stones"/>
+    <Choice value="sett"/>
+    <Choice value="unpaved"/>
+  </Choices>
+  
+ <Choices name="smoothness" toName="image" showInline="true">
+    <Choice value="excellent"/>
+    <Choice value="good"/>
+	<Choice value="intermediate"/>
+    <Choice value="bad"/>
+    <Choice value="very bad"/>
+  </Choices>
+
+    <Header value="Cycleway" />
+
+    <Choices name="surface_cycleway" toName="image" showInline="true">
+    <Choice value="asphalt"/>
+    <Choice value="concrete"/>
+	<Choice value="paving_stones"/>
+    <Choice value="sett"/>
+    <Choice value="unpaved"/>
+  </Choices>
+  
+ <Choices name="smoothness_cycleway" toName="image" showInline="true">
+    <Choice value="excellent"/>
+    <Choice value="good"/>
+	<Choice value="intermediate"/>
+    <Choice value="bad"/>
+    <Choice value="very bad"/>
+  </Choices>
+  
+        <Header value="Pedestrian"/>
+  
+<Choices name="surface_pedestrian" toName="image" showInline="true">
+    <Choice value="asphalt"/>
+    <Choice value="concrete"/>
+	<Choice value="paving_stones"/>
+    <Choice value="sett"/>
+    <Choice value="unpaved"/>
+  </Choices>
+  
+
+ <Choices name="smoothness_pedestrian" toName="image" showInline="true">
+    <Choice value="excellent"/>
+    <Choice value="good"/>
+	<Choice value="intermediate"/>
+    <Choice value="bad"/>
+    <Choice value="very bad"/>
+  </Choices>
+
+            <Header value="General"/>
+
+  
+   <Choices name="nostreet" toName="image" showInline="true">
+    <Choice value="(mainly) no street visible"/>
+	<Choice value="surface / smoothness not recognizable"/>
+  </Choices>
+</View>

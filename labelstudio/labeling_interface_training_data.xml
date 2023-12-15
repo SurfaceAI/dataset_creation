@@ -1,0 +1,33 @@
+<View>
+  <Header value="Select the correct label:" />
+  <Image name="image" value="$image" width="60%"/>
+  
+  <Choices name="surface" toName="image" showInline="true">
+    <Choice value="asphalt"/>
+    <Choice value="concrete"/>
+	<Choice value="paving_stones"/>
+    <Choice value="sett"/>
+    <Choice value="unpaved"/>
+  </Choices>
+  
+ <Choices name="smoothness" toName="image" showInline="true">
+    <Choice value="excellent"/>
+    <Choice value="good"/>
+	<Choice value="intermediate"/>
+    <Choice value="bad"/>
+    <Choice value="very bad"/>
+  </Choices>
+
+ <Choices name="roadtype" toName="image" showInline="true">
+    <Choice value="road(car)"/>
+    <Choice value="cycleway"/>
+	<Choice value="pedestrian"/>
+    <Choice value="path (unspecified)"/>
+  </Choices>
+
+   <Choices name="nostreet" toName="image" showInline="true">
+    <Choice value="(mainly) no street visible"/>
+    <Choice value="surface / smoothness not recognizable"/>
+    <Choice value="unsure - please revise"/>
+  </Choices>
+</View>
