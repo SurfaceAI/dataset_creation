@@ -5,11 +5,12 @@ import concurrent.futures
 import csv
 
 # setting path
-sys.path.append('./')
- 
+sys.path.append("./")
+
 # importing
 import config
 import utils
+
 # ---------------------
 
 # output path
@@ -18,8 +19,10 @@ bbox = config.bbox_germany
 
 # ---------------------
 
+
 def get_tile_number(tile):
-    return (tiles.index(tile))
+    return tiles.index(tile)
+
 
 def counts_per_tile(tile):
     tile_no = get_tile_number(tile)
@@ -27,11 +30,10 @@ def counts_per_tile(tile):
         print(f"current tile number {tile_no}")
 
     data = utils.get_tile_data(tile)
-    return (len(data['features']))
+    return len(data["features"])
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     start = time.time()
     tiles = utils.get_mapbox_tiles(bbox[0], bbox[1], bbox[2], bbox[3], config.zoom)
 
@@ -42,9 +44,9 @@ if __name__ == '__main__':
         # Using executor.map to parallelize the function
         results = list(executor.map(counts_per_tile, tiles))
 
-    with open(out_path, 'w', newline='') as csvfile:
+    with open(out_path, "w", newline="") as csvfile:
         csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(['x', 'y', 'z', 'lat', 'lon', 'image_count'])
+        csvwriter.writerow(["x", "y", "z", "lat", "lon", "image_count"])
         for i in range(0, len(tiles)):
             tile = tiles[i]
             image_count = results[i]
@@ -57,6 +59,3 @@ if __name__ == '__main__':
     # 21 minutes for 793 tiles
     # 7 minutes for 793 tiles with 4 threads
     # 293 minutes (ca. 5h) for Germany (235.478 tiles) with 8 threads
-
-
-

@@ -1,48 +1,48 @@
-germany_tiles_path = 'data/germany_image_counts.csv'
-germany_raster_template = 'data/germany_tile_raster_template.tif'
-germany_raster_image_counts = 'data/germany_mapillary_counts_raster.tif'
-germany_osmtag_counts = 'data/germany_osmtag_counts.tif'
-autobahn_path = 'data/autobahn.shp'
-filtered_autobahn_path = 'data/{}/autobahn_filtered.geojson'
+germany_tiles_path = "data/germany_image_counts.csv"
+germany_raster_template = "data/germany_tile_raster_template.tif"
+germany_raster_image_counts = "data/germany_mapillary_counts_raster.tif"
+germany_osmtag_counts = "data/germany_osmtag_counts.tif"
+autobahn_path = "data/autobahn.shp"
+filtered_autobahn_path = "data/{}/autobahn_filtered.geojson"
 # berlin_tiles_path = 'data/berlin_image_counts.csv'
 # berlin_raster_template = 'data/berlin_tile_raster_template.tif'
 # berlin_raster_image_counts = 'data/berlin_tile_raster.tif'
 
-#test_city_tiles_path = 'data/test_city_tiles.csv'
-#test_tiles_metadata_path = 'data/test_tiles_metadata.csv'
-#test_image_selection_metadata_path = 'data/testimage_selection_metadata.csv'
+# test_city_tiles_path = 'data/test_city_tiles.csv'
+# test_tiles_metadata_path = 'data/test_tiles_metadata.csv'
+# test_image_selection_metadata_path = 'data/testimage_selection_metadata.csv'
 
-test_city_tiles_path = 'data/{}/city_tiles.csv'
-test_tiles_metadata_path = 'data/{}/all_images_metadata.csv'
-test_image_selection_metadata_path = 'data/{}/image_selection_metadata.csv'
-test_image_folder = 'data/{}/images'
-test_small_raster_template = 'data/{}/small_raster_template.tif'
-test_small_raster_counts = 'data/{}/small_raster_counts.tif'
+test_city_tiles_path = "data/{}/city_tiles.csv"
+test_tiles_metadata_path = "data/{}/all_images_metadata.csv"
+test_image_selection_metadata_path = "data/{}/image_selection_metadata.csv"
+test_image_folder = "data/{}/images"
+test_small_raster_template = "data/{}/small_raster_template.tif"
+test_small_raster_counts = "data/{}/small_raster_counts.tif"
 test_image_metadata_with_tags_path = "data/{}/img_metadata_with_tags.csv"
 
-boundary = 'data/{}/boundary.geojson'
+boundary = "data/{}/boundary.geojson"
 
-train_tiles_metadata_path = 'data/train_tiles_metadata.csv'
-train_tiles_selection_path = 'data/train_tiles_selection.csv'
-train_image_selection_metadata_path = 'data/{}_train_image_selection_metadata.csv'
-train_image_sample_metadata_path = 'data/{}_train_image_sample_metadata.csv'
+train_tiles_metadata_path = "data/train_tiles_metadata.csv"
+train_tiles_selection_path = "data/train_tiles_selection.csv"
+train_image_selection_metadata_path = "data/{}_train_image_selection_metadata.csv"
+train_image_sample_metadata_path = "data/{}_train_image_sample_metadata.csv"
 train_image_sample_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}/00_sample"
-train_image_folder = 'data/{}_train_images'
+train_image_folder = "data/{}_train_images"
 train_image_metadata_with_tags_path = "data/{}_img_metadata_with_tags.csv"
 
 
-sql_script_intersect_osm_mapillary_path = 'scripts/intersect_osm_mapillary.sql'
-sql_script_save_db_to_csv_path = 'scripts/save_db_to_csv.sql'
-sql_script_mapillary_meta_to_database_path = 'scripts/mapillary_meta_to_database.sql'
-sql_script_osm_tags_to_raster_counts_path = 'scripts/osm_tag_counts_as_raster.sql'
+sql_script_intersect_osm_mapillary_path = "scripts/intersect_osm_mapillary.sql"
+sql_script_save_db_to_csv_path = "scripts/save_db_to_csv.sql"
+sql_script_mapillary_meta_to_database_path = "scripts/mapillary_meta_to_database.sql"
+sql_script_osm_tags_to_raster_counts_path = "scripts/osm_tag_counts_as_raster.sql"
 
-token_path = 'mapillary_token.txt'
+token_path = "mapillary_token.txt"
 
 ## global mapillary settings
-mapillary_tile_url = 'https://tiles.mapillary.com/maps/vtp/{}/2/{}/{}/{}'
-mapillary_graph_url = 'https://graph.mapillary.com/{}'
-tile_coverage = 'mly1_public'
-tile_layer = "image" #"overview"
+mapillary_tile_url = "https://tiles.mapillary.com/maps/vtp/{}/2/{}/{}/{}"
+mapillary_graph_url = "https://graph.mapillary.com/{}"
+tile_coverage = "mly1_public"
+tile_layer = "image"  # "overview"
 zoom = 14
 image_size = "thumb_1024_url"
 
@@ -75,6 +75,6 @@ imgs_per_class = 1200
 
 
 ##labelstudio
-#labelstudio_absolute_path = "http://localhost:8080/data/local-files/?d={}"
-labelstudio_absolute_path= "https://freemove.f4.htw-berlin.de/data/local-files/?d={}"
-labelstudio_predictions_path= "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}/sample_predictions.json"
+# labelstudio_absolute_path = "http://localhost:8080/data/local-files/?d={}"
+labelstudio_absolute_path = "https://freemove.f4.htw-berlin.de/data/local-files/?d={}"
+labelstudio_predictions_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}/sample_predictions.json"
