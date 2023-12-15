@@ -1,13 +1,16 @@
-# dataset_creation
+# Dataset creation
 
-Code to create our test and training data.
-
-## Pre-study: find out mapillary image and tag counts per (mapbox) tile
-
-*Data for Mapillary and OSM both taken from 20th November 2023.*
-
+Code to create our test and training data and other relevant statistics.
 
 *> a file `mapillary_token.txt` needs to be created that holds the mapillary access token for the API and is placed in the root folder of this repo.*
+
+*For our run, metadata for Mapillary and OSM both taken from 20th November 2023.*
+
+## Scripts
+
+You can find all scripts in the folder `scripts`. 
+
+### Pre-study: find out mapillary image and tag counts per (mapbox) tile
 
 [`mapillary_image_counts_per_tile.py`](/scripts/mapillary_image_counts_per_tile.py) is a script that queries the mapillary API and creates a csv where each row corresponds to one tile (x,y,z) with center lat / lon and image count information.
 
@@ -15,19 +18,21 @@ As mapillary has a rate limit, there are two tokens expected in the `mapillary_t
 
 [`create_raster_from_tiles.py`](/scripts/create_raster_from_tiles.py) is a script that creates a raster file (.tif) for the previously created csv file and each raster cell contains the image count.
 
-[`osm_tag_counts_as_raster.sql`](/scripts/osm_tag_counts_as_raster.sql) is a SQL script that creates seperate rasters with counts of `asphalt`, `sett`, `paving_stones`, `unpaved`. It expects a database with an `.osm.pbf` file inserted. 
+[`osm_tag_counts_as_raster.py`](/scripts/osm_tag_counts_as_raster.py) is a python wrapper script for mostly SQL code that creates seperate rasters with counts of `asphalt`, `sett`, `paving_stones`, `unpaved`. It expects a database with an `.osm.pbf` file inserted. The database credentials are expected to be in a file `database_credentials.py` (`database`, `user`, `host`).
 
 ## Dataset creation
 
-This is the [script](/scripts/train_test_data.py) for creation of train and test datasets.
+This is the (most relevant) [script](/scripts/train_test_data.py) for creation of train and test datasets.
+
+The procedure is as follows:
 
 ### Step 1: create test data
 
 
 - Selection of five cities as test data, which will be entirely excluded from the training data set. These cities are all in Germany but differ in their region (north, west, east, south-east, south-west) and in their size. We used cities with good mapillary image coverage.
-    - Munich
+    - München
     - Heidelberg
-    - Cologne
+    - Köln
     - Lüneburg
     - Dresden
 
@@ -41,7 +46,9 @@ We then sample 1000 images per city.
 
 ### Step 2: create training data
 
-For the training data, our aim is to intersect mapillary images with OSM surface and smoothness tags and create a labeled dataset where each class (i.e, surface/smoothness combination) has 1000 images. The process of creating training data is still evolving. In the following section, you can read the filters applied in each version.
+For the training data, our aim is to intersect mapillary images with OSM surface and smoothness tags and create a labeled dataset where each class (i.e, surface/smoothness combination) has 1000 images. The process of creating training data is still evolving. In the following section, you can read the filters and considerations applied in each version.
+
+Changes are marked in **bold**.
 
 #### Dataset versions
 
@@ -57,14 +64,14 @@ First test with Berlin data. See [script](https://github.com/SurfaceAI/internal_
 
 **V1**
 
-- sample from entire Germany.
-- sampling of 1000 random tiles with > 500 img per tile and  50 tagged roads
-- buffer of 5 meters
-- *no* cut off at intersections (start and end of roads)
-- only images after June 2021
-- max 10 images per sequence
-- about 100 images per class
-- no panorama images
+- **sample from entire Germany**
+- **sampling of 1000 random tiles with > 500 img per tile and  50 tagged roads**
+- **buffer of 5 meters around each street which are intersected with mapillary image coordinates**
+- ***no* cut off at intersections (start and end of roads)**
+- **only images after June 2021**
+- **max 10 images per sequence**
+- **about 100 images per class**
+- **no panorama images**
 
 **V2**
 
@@ -102,7 +109,6 @@ First test with Berlin data. See [script](https://github.com/SurfaceAI/internal_
 
 
 **V4**
-
 
 - sample from entire Germany.
 - sampling of 1000 random tiles with > 500 img per tile and  50 tagged roads
