@@ -18,12 +18,15 @@ test_image_selection_metadata_path = 'data/{}/image_selection_metadata.csv'
 test_image_folder = 'data/{}/images'
 test_small_raster_template = 'data/{}/small_raster_template.tif'
 test_small_raster_counts = 'data/{}/small_raster_counts.tif'
+test_image_metadata_with_tags_path = "data/{}/img_metadata_with_tags.csv"
 
 boundary = 'data/{}/boundary.geojson'
 
 train_tiles_metadata_path = 'data/train_tiles_metadata.csv'
 train_tiles_selection_path = 'data/train_tiles_selection.csv'
 train_image_selection_metadata_path = 'data/{}_train_image_selection_metadata.csv'
+train_image_sample_metadata_path = 'data/{}_train_image_sample_metadata.csv'
+train_image_sample_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}/00_sample"
 train_image_folder = 'data/{}_train_images'
 train_image_metadata_with_tags_path = "data/{}_img_metadata_with_tags.csv"
 
@@ -62,7 +65,7 @@ max_img_per_sequence_test = 10
 max_img_per_cell = 5
 
 # training images
-training_data_version = "v3"
+training_data_version = "v4"
 max_img_per_sequence_training = 5
 min_images = 500
 min_tags = 50
@@ -71,5 +74,6 @@ imgs_per_class = 1200
 
 
 ##labelstudio
-# TODO: only temp
-labelstudio_absolute_path = "http://localhost:8080/data/local-files/?d=Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}"
+#labelstudio_absolute_path = "http://localhost:8080/data/local-files/?d={}"
+labelstudio_absolute_path= "https://freemove.f4.htw-berlin.de/data/local-files/?d={}"
+labelstudio_predictions_path= "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}/sample_predictions.json"

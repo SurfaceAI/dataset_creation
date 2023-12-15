@@ -138,13 +138,13 @@ def intersect_mapillary_osm(tile_id, table_name):
     start_query = time.time()
     
     tilex, tiley, zoom = str.split(tile_id, "_")
-    tile_bbox = tile_bbox(int(tilex), int(tiley), int(zoom))
+    bbox = tile_bbox(int(tilex), int(tiley), int(zoom))
     with open(config.sql_script_intersect_osm_mapillary_path, 'r') as file:
         query = file.read()
-    
-    query = query.format(tile_bbox[0], tile_bbox[1], tile_bbox[2], tile_bbox[3],
-                                tile_bbox[0], tile_bbox[1], tile_bbox[2], tile_bbox[3],
-                                table_name, table_name, table_name, table_name)
+        query = str.replace(query, "{table_name}", table_name)
+
+    query = query.format(bbox[0], bbox[1], bbox[2], bbox[3],
+                                bbox[0], bbox[1], bbox[2], bbox[3])
     
     # Connect to your PostgreSQL database
     conn = psycopg2.connect(
@@ -157,4 +157,22 @@ def intersect_mapillary_osm(tile_id, table_name):
         conn.commit()  
 
     end_query = time.time()
-    print(f"{tile_id} took {(round(end_query-start_query))} secs for intersection")
+    #print(f"{tile_id} took {(round(end_query-start_query))} secs for intersection")
+
+
+def save_sql_table_to_csv(table_name, output_path, where_clause = "where highway != ''"):
+    with open(config.sql_script_save_db_to_csv_path, 'r') as file:
+        query = file.read()
+    absolute_path = os.path.join(os.getcwd(), output_path)
+        
+    # Connect to your PostgreSQL database
+    conn = psycopg2.connect(
+        dbname=db.database,
+        user=db.user,
+        host=db.host,
+    )
+    with conn.cursor(cursor_factory=DictCursor) as cursor:
+        cursor.execute(sql.SQL(query.format(table_name, where_clause, absolute_path)))
+        conn.commit()  
+    conn.close() 
+    print("csv exported from db")

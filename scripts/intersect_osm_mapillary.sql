@@ -73,11 +73,11 @@ set geom = ST_LineSubstring(geom, 0.1, 0.9);
 drop table if exists mapillary_selection;
 
 CREATE TABLE mapillary_selection AS
-SELECT * FROM {} 
+SELECT * FROM {table_name}
 --where captured_at > 1672527600000 -- filter images only from this year (2023) - still > 1 Mio
 
 where  ST_Within(
-        {}.geom,
+        {table_name}.geom,
          ST_MakeEnvelope({}, {}, {}, {}, 4326)
     ); 
 
@@ -98,7 +98,7 @@ DELETE FROM mapillary_selection_labeled
 WHERE row_num != 1;
 
 
-UPDATE {}
+UPDATE {table_name}
 SET surface = mapillary_selection_labeled.surface,
 smoothness = mapillary_selection_labeled.smoothness,
 highway = mapillary_selection_labeled.highway,
@@ -113,10 +113,10 @@ cycleway_left_surface = mapillary_selection_labeled.cycleway_left_surface,
 cycleway_left_smoothness = mapillary_selection_labeled.cycleway_left_smoothness,
 distance= mapillary_selection_labeled.distance
 FROM mapillary_selection_labeled
-WHERE {}.id = mapillary_selection_labeled.id;
+WHERE {table_name}.id = mapillary_selection_labeled.id;
 
 
--- ALTER TABLE {}
+-- ALTER TABLE {table_name}
 -- DROP COLUMN IF EXISTS surface,
 -- DROP COLUMN IF EXISTS smoothness,
 -- DROP COLUMN IF EXISTS highway,

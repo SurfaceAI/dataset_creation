@@ -151,6 +151,54 @@ def create_test_data(cities):
             print("images already downloaded, step is skipped")
 
 
+        # intersect with osm
+        if not os.path.exists(config.test_image_metadata_with_tags_path.format(city)):
+            # create mapillary_testdata_meta table in postgres
+            with open(config.mapillary_meta_to_database_path, 'r') as file:
+                query = file.read()
+
+            # Connect to your PostgreSQL database
+            conn = psycopg2.connect(
+                dbname=db.database,
+                user=db.user,
+                host=db.host,
+            )
+
+            # Execute the intersection query
+            temp_path = "data/temp.csv"
+            pd.read_csv(config.test_image_selection_metadata_path.format(city)).drop(columns=["cell_ids"]).to_csv(temp_path, index=False)
+            
+            absolute_path = os.path.join(os.getcwd(), temp_path)
+            with conn.cursor(cursor_factory=DictCursor) as cursor:
+                query = str.replace(query, "{table_name}", "mapillary_testdata_meta")
+                cursor.execute(sql.SQL(query.format(absolute_path)))
+                conn.commit()   
+            conn.close() 
+            os.remove(absolute_path)
+
+            # for each tile, SQL query of intersecting ways with surface / smoothness tags
+            tiles = pd.DataFrame()
+            #for city in cities:
+            #city_tiles = pd.read_csv(config.test_city_tiles_path.format(city))
+                #tiles = pd.concat([tiles, city_tiles]
+            tiles = pd.read_csv(config.test_city_tiles_path.format(city))
+            tile_ids = tiles["x"].astype(str) + "_" + tiles["y"].astype(str) + "_" + tiles["z"].astype(str)
+
+            start = time.time()
+            print(f"{len(tile_ids.unique())} tiles to intersect with OSM")
+            for tile_id in tile_ids.unique():
+                utils.intersect_mapillary_osm(tile_id, "mapillary_testdata_meta")
+                
+            end = time.time()
+            print(f"{round((end-start) / 60)} mins to intersect all selected test tiles")
+
+            utils.save_sql_table_to_csv("mapillary_testdata_meta", 
+                                        config.test_image_metadata_with_tags_path.format(city),
+                                        where_clause='')
+            
+        else:
+            print("already intersected with osm, step is skipped")
+
 
         ##########################################
 
@@ -232,7 +280,6 @@ def create_training_data(cities, train_data_version):
     else:
         print(f"tile metadata already queried ({config.train_tiles_metadata_path}), step is skipped")
 
-
     # for each tile, SQL query of intersecting ways with surface / smoothness tags
     tiles = pd.read_csv(config.train_tiles_selection_path)
     tile_ids = tiles["x"].astype(str) + "_" + tiles["y"].astype(str) + "_" + tiles["z"].astype(str)
@@ -244,17 +291,8 @@ def create_training_data(cities, train_data_version):
         
     end = time.time()
     print(f"{round((end-start) / 60)} mins to intersect all selected test tiles")
-        
-    with open(config.sql_script_save_db_to_csv_path, 'r') as file:
-        query = file.read()
-    absolute_path = os.path.join(os.getcwd(), config.train_image_metadata_with_tags_path.format(train_data_version))
-        # Connect to your PostgreSQL database
-    with conn.cursor(cursor_factory=DictCursor) as cursor:
-        cursor.execute(sql.SQL(query.format(absolute_path)))
-        conn.commit()  
-    conn.close() 
-    print("csv exported from db")
-    # 10 Mio images and 1000 tiles take 2,8 hours
+    
+    utils.save_sql_table_to_csv("mapillary_meta", config.train_image_metadata_with_tags_path.format(train_data_version))
 
     # # further filter data
     # if not os.path.exists(config.train_image_selection_metadata_path.format(train_data_version)):
@@ -274,7 +312,7 @@ def create_training_data(cities, train_data_version):
 
 if __name__ == "__main__":
 
-    #cities = ["heilbronn", "lueneburg"]
-    #create_test_data(cities)
-    cities = [const.COLOGNE, const.MUNICH, const.DRESDEN, const.HEILBRONN, const.LUENEBURG]
-    create_training_data(cities, "v3")
+    cities = [const.COLOGNE]
+    create_test_data(cities)
+    #cities = [const.COLOGNE, const.MUNICH, const.DRESDEN, const.HEILBRONN, const.LUENEBURG]
+    #create_training_data(cities, "v3")
