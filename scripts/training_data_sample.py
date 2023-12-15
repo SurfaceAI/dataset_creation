@@ -1,11 +1,9 @@
 import pandas as pd
-import json
 
 # setting path
 import sys
 sys.path.append('./')
 import config
-import constants as const
 
 metadata_path = config.train_image_selection_metadata_path.format(config.training_data_version)
 metadata = pd.read_csv(metadata_path)
@@ -38,6 +36,7 @@ for i in range(4):
 df_sorted.to_csv(config.train_image_sample_metadata_path.format(config.training_data_version), index=False)
 
 
+# download again - could also be gathered from existing images
 import utils
 folder = config.train_image_sample_path.format(config.training_data_version)
 for image_id in df_sorted.id:

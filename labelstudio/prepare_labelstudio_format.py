@@ -155,15 +155,14 @@ def create_labelstudio_input_file(is_testdata, metadata_path, img_url, output_pa
 
 
 if __name__ == "__main__":
-    # test data
-    # city = const.COLOGNE
-    # metadata_path = config.test_image_metadata_with_tags_path.format(city)
-    # img_url = config.labelstudio_absolute_path.format(f"test_data/{city}/images")
-    # output_path = f"data/{city}/predictions.json"
-    # create_labelstudio_input_file(True, metadata_path, img_url, output_path)
+    ### test data
+    city = const.COLOGNE
+    metadata_path = config.test_image_metadata_with_tags_path.format(city)
+    img_url = config.labelstudio_absolute_path.format(f"test_data/{city}/images")
+    output_path = f"data/{city}/predictions.json"
+    create_labelstudio_input_file(True, metadata_path, img_url, output_path)
 
-    # training data
-    
+    ### training data
     # entire dataset
     #metadata_path = config.train_image_selection_metadata_path.format(config.training_data_version)
 
@@ -171,5 +170,5 @@ if __name__ == "__main__":
     metadata_path = config.train_image_sample_metadata_path.format(config.training_data_version)
     img_url = config.labelstudio_absolute_path.format("00_sample")
     output_path = config.labelstudio_predictions_path.format(config.training_data_version)
-    create_labelstudio_input_file(True, metadata_path, img_url, output_path)
+    create_labelstudio_input_file(False, metadata_path, img_url, output_path)
     

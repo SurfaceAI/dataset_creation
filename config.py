@@ -33,7 +33,8 @@ train_image_metadata_with_tags_path = "data/{}_img_metadata_with_tags.csv"
 
 sql_script_intersect_osm_mapillary_path = 'scripts/intersect_osm_mapillary.sql'
 sql_script_save_db_to_csv_path = 'scripts/save_db_to_csv.sql'
-mapillary_meta_to_database_path = 'scripts/mapillary_meta_to_database.sql'
+sql_script_mapillary_meta_to_database_path = 'scripts/mapillary_meta_to_database.sql'
+sql_script_osm_tags_to_raster_counts_path = 'scripts/osm_tag_counts_as_raster.sql'
 
 token_path = 'mapillary_token.txt'
 
