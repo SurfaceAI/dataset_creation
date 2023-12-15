@@ -1,13 +1,3 @@
-# Strategy to create test data:
-# 1. select test cities
-# Nord: Lüneburg (80.000)
-# West: Cologne (1,1 Mio)
-# Southeast: bamberg (80.000)
-# South: heilbronn (130.000)
-# East: dresden (550.000)
-# 2. query mapillary tiles and images after year 06.2021
-# 3. select random 1.000 images per
-
 import os
 import time
 import csv
@@ -18,6 +8,7 @@ from psycopg2.extras import DictCursor
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Point
+import mercantile
 
 import sys
 
@@ -42,9 +33,9 @@ def create_test_data(cities):
         ### download all tile metadata
         if not os.path.exists(config.test_city_tiles_path.format(city)):
             tiles = list()
-            tiles += utils.get_mapbox_tiles(
+            tiles += list(mercantile.tiles(
                 bbox[0], bbox[1], bbox[2], bbox[3], config.zoom
-            )
+            ))
 
             with open(
                 config.test_city_tiles_path.format(city), "w", newline=""
@@ -53,7 +44,7 @@ def create_test_data(cities):
                 csvwriter.writerow(["x", "y", "z", "lat", "lon"])
                 for i in range(0, len(tiles)):
                     tile = tiles[i]
-                    lon, lat = utils.num2deg(tile.x, tile.y, config.zoom)
+                    lon, lat = utils.tile_center(tile.x, tile.y, config.zoom)
                     point = gpd.GeoDataFrame(
                         geometry=[Point(lon, lat)], crs="EPSG:4326"
                     )
@@ -81,7 +72,7 @@ def create_test_data(cities):
         if not os.path.exists(config.test_small_raster_template.format(city)):
             # create an assignment to a fine grid
             gdf = gpd.read_file(config.boundary.format(city), crs="EPSG:4326")
-            # transform crs to web mercator (needed for mapbox tiles)
+            # transform crs to web mercator (needed for mercantile tiles)
             gdf = gdf.to_crs("EPSG:3035")
             xmin, ymin, xmax, ymax = gdf.total_bounds
             rf.create_raster(

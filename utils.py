@@ -1,6 +1,5 @@
 import os
 import csv
-import math
 import mercantile
 import config
 import requests
@@ -18,42 +17,33 @@ with open(config.token_path, "r") as file:
     access_tokens = [line.strip() for line in file.readlines()]
 current_token = 0
 
-
-# convert tile coordinates to lat/lon
-# from: https://wiki.openstreetmap.org/wiki/DE:Slippy_map_tilenames
-def num2deg(xtile, ytile, zoom):
-    xtile = int(xtile) + 0.5  # get center
-    ytile = int(ytile) + 0.5  # get center
-    n = 1 << zoom
-    lon_deg = xtile / n * 360.0 - 180.0
-    lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
-    lat_deg = math.degrees(lat_rad)
-    return lon_deg, lat_deg
-
-
-def deg2num(lat_deg, lon_deg, zoom):
-    lat_rad = math.radians(lat_deg)
-    n = 2.0**zoom
-    xtile = int((lon_deg + 180.0) / 360.0 * n)
-    ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
-    return xtile, ytile
-
-
-def tile_bbox(xtile, ytile, zoom):
-    west, north = num2deg(xtile - 0.5, ytile - 0.5, zoom)
-    east, south = num2deg(xtile + 0.5, ytile + 0.5, zoom)
-    return west, south, east, north
-
-
-def get_mapbox_tiles(west, south, east, north, zoom):
-    tiles = list(mercantile.tiles(west, south, east, north, zoom))
-    return tiles
-
-
-"""get tile data from mapillary"""
+def tile_center(xtile, ytile, zoom):
+    """Return longitude,latitude centroid coordinates of mercantile tile
+    Args:
+        xtile (int): x tile coordinate
+        ytile (int): y tile coordinate
+        zoom (int): zoom level
+    
+    Returns:
+        (float, float): A tuple of longitude, latitude.
+    """
+    upperleft = mercantile.ul(xtile, ytile, zoom)
+    upperright = mercantile.ul(xtile, ytile, zoom)
+    lowerleft =  mercantile.ul(xtile, ytile, zoom)
+    lon = (upperleft.lng + upperright.lng) / 2
+    lat = (upperleft.lat + lowerleft.lat) / 2
+    return lon, lat
 
 
 def get_tile_data(tile):
+    """Get metadata for all images within a tile from mapillary (based on tiles endpoint)
+    
+    Args:
+        tile(mercantile.Tile): mercantile tile
+
+    Returns:
+        dict: Metadata of all images within tile as json (dict).
+    """
     global current_token
 
     response = requests.get(
@@ -172,7 +162,7 @@ def intersect_mapillary_osm(tile_id, table_name):
     start_query = time.time()
 
     tilex, tiley, zoom = str.split(tile_id, "_")
-    bbox = tile_bbox(int(tilex), int(tiley), int(zoom))
+    bbox = mercantile.bounds(int(tilex), int(tiley), int(zoom))
     with open(config.sql_script_intersect_osm_mapillary_path, "r") as file:
         query = file.read()
         query = str.replace(query, "{table_name}", table_name)

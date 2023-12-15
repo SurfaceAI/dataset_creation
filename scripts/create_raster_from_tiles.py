@@ -11,7 +11,7 @@ sys.path.append("./")
 import utils
 import raster_functions as rf
 
-#### create a mapbox tile raster template based on dataset with tile coordinates
+#### create a mercantile tile raster template based on dataset with tile coordinates
 # create a template raster with empty values
 # create a raster with image counts (as given in column *image_count* in the input csv)
 
@@ -27,14 +27,14 @@ output_path = "data/berlin_tile_raster.tif"
 
 df = pd.read_csv(input_path)
 
-mins = utils.num2deg(df.x.min(), df.y.min(), 14)
-maxs = utils.num2deg(df.x.max() + 1, df.y.max() + 1, 14)
+mins = utils.tile_center(df.x.min(), df.y.min(), 14)
+maxs = utils.tile_center(df.x.max() + 1, df.y.max() + 1, 14)
 
 # Create a GeoDataFrame with the min and max points
 gdf = gpd.GeoDataFrame(
     geometry=[Point(mins[0], mins[1]), Point(maxs[0], maxs[1])], crs="EPSG:4326"
 )
-# transform crs to web mercator (needed for mapbox tiles)
+# transform crs to web mercator (needed for mercantile tiles)
 gdf = gdf.to_crs("EPSG:3857")
 xmin = gdf.total_bounds[0]
 xmax = gdf.total_bounds[2]

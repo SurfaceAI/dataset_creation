@@ -2,6 +2,8 @@ import rpy2.robjects as robjects
 from rpy2.robjects import pandas2ri
 from PIL import Image
 import numpy as np
+import mercantile
+
 import utils
 import config
 
@@ -90,7 +92,7 @@ def raster_to_tiledf(raster_path):
         df = robjects.conversion.get_conversion().rpy2py(df)
 
     tiles_x_y = df.apply(
-        lambda row: utils.deg2num(row["lat"], row["lon"], config.zoom), axis=1
+        lambda row: mercantile.tile(row["lon"], row["lat"], config.zoom), axis=1
     )
     df["x"] = [tiles_x_y[i][0] for i in range(0, len(tiles_x_y))]
     df["y"] = [tiles_x_y[i][1] for i in range(0, len(tiles_x_y))]

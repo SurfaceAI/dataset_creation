@@ -3,6 +3,7 @@ import sys
 import time
 import concurrent.futures
 import csv
+import mercantile
 
 # setting path
 sys.path.append("./")
@@ -35,8 +36,7 @@ def counts_per_tile(tile):
 
 if __name__ == "__main__":
     start = time.time()
-    tiles = utils.get_mapbox_tiles(bbox[0], bbox[1], bbox[2], bbox[3], config.zoom)
-
+    tiles = list(mercantile.tiles(bbox[0], bbox[1], bbox[2], bbox[3], config.zoom))
     # Number of parallel threads (adjust as needed)
     num_threads = 8
 
@@ -50,7 +50,7 @@ if __name__ == "__main__":
         for i in range(0, len(tiles)):
             tile = tiles[i]
             image_count = results[i]
-            lon, lat = utils.num2deg(tile.x, tile.y, config.zoom)
+            lon, lat = utils.tile_center(tile.x, tile.y, config.zoom)
             csvwriter.writerow([tile.x, tile.y, config.zoom, lat, lon, image_count])
 
     end = time.time()

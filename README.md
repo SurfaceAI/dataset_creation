@@ -10,7 +10,7 @@ Code to create our test and training data and other relevant statistics.
 
 You can find all scripts in the folder `scripts`. 
 
-### Pre-study: find out mapillary image and tag counts per (mapbox) tile
+### Pre-study: find out mapillary image and tag counts per (mercantile) tile
 
 [`mapillary_image_counts_per_tile.py`](/scripts/mapillary_image_counts_per_tile.py) is a script that queries the mapillary API and creates a csv where each row corresponds to one tile (x,y,z) with center lat / lon and image count information.
 
