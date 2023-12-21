@@ -7,6 +7,7 @@ import sys
 sys.path.append("./")
 import config
 import constants as const
+import utils
 
 
 def training_entity(row, img_folder):
@@ -19,20 +20,14 @@ def training_entity(row, img_folder):
                         "from_name": "surface",
                         "to_name": "image",
                         "type": "choices",
-                        "value": {"choices": [row["surface"]]},
+                        "value": {"choices": [row["surface_clean"]]},
                     },
                     {
                         "from_name": "smoothness",
                         "to_name": "image",
                         "type": "choices",
                         "value": {"choices": [row["smoothness"]]},
-                    },
-                    {
-                        "from_name": "nostreet",
-                        "to_name": "image",
-                        "type": "choices",
-                        "value": {"choices": []},
-                    },
+                    }
                 ]
             }
         ],
@@ -43,7 +38,7 @@ def test_entity(row, img_folder):
     entity = {"data": {"image": f"{img_folder}/{row['id']}.jpg"}}
 
     # only add predictions if there is a surface, otherwise error from labelstudio
-    if isinstance(row["surface"], str):
+    if isinstance(row["surface_clean"], str):
         entity["predictions"] = [
             {
                 "result": [
@@ -51,44 +46,14 @@ def test_entity(row, img_folder):
                         "from_name": "surface",
                         "to_name": "image",
                         "type": "choices",
-                        "value": {"choices": [row["surface"]]},
+                        "value": {"choices": [row["surface_clean"]]},
                     },
                     {
                         "from_name": "smoothness",
                         "to_name": "image",
                         "type": "choices",
                         "value": {"choices": [row["smoothness"]]},
-                    },
-                    {
-                        "from_name": "surface_cycleway",
-                        "to_name": "image",
-                        "type": "choices",
-                        "value": {"choices": []},
-                    },
-                    {
-                        "from_name": "smoothness_cycleway",
-                        "to_name": "image",
-                        "type": "choices",
-                        "value": {"choices": []},
-                    },
-                    {
-                        "from_name": "surface_pedestrian",
-                        "to_name": "image",
-                        "type": "choices",
-                        "value": {"choices": []},
-                    },
-                    {
-                        "from_name": "smoothness_pedestrian",
-                        "to_name": "image",
-                        "type": "choices",
-                        "value": {"choices": []},
-                    },
-                    {
-                        "from_name": "nostreet",
-                        "to_name": "image",
-                        "type": "choices",
-                        "value": {"choices": []},
-                    },
+                    }
                 ]
             }
         ]
@@ -97,7 +62,10 @@ def test_entity(row, img_folder):
 
 def create_labelstudio_input_file(is_testdata, metadata_path, img_url, output_path):
     df = pd.read_csv(metadata_path)
-    df["surface"] = df.surface.str.strip()
+    if ("surface_clean") not in df.columns:
+        df = utils.clean_surface(df)
+
+    #df["surface"] = df.surface.str.strip()
     df["smoothness"] = df.smoothness.str.strip()
 
     # Convert each row to JSON object and collect them in a list
@@ -117,16 +85,17 @@ def create_labelstudio_input_file(is_testdata, metadata_path, img_url, output_pa
 
 
 if __name__ == "__main__":
-    ### test data
-    city = const.COLOGNE
-    metadata_path = config.test_image_metadata_with_tags_path.format(city)
-    img_url = config.labelstudio_absolute_path.format(f"test_data/{city}/images")
-    output_path = f"data/{city}/predictions.json"
-    create_labelstudio_input_file(True, metadata_path, img_url, output_path)
+    ## test data
+    # city = const.COLOGNE
+    # metadata_path = config.test_image_metadata_with_tags_path.format(city)
+    # img_url = config.labelstudio_absolute_path.format(f"test_data/{city}/images")
+    # output_path = f"data/{city}/predictions.json"
+    # create_labelstudio_input_file(True, metadata_path, img_url, output_path)
 
-    ### training data
+
+    ## training data
     # entire dataset
-    # metadata_path = config.train_image_selection_metadata_path.format(config.training_data_version)
+    metadata_path = config.train_image_selection_metadata_path.format(config.training_data_version)
 
     # only sample
     metadata_path = config.train_image_sample_metadata_path.format(

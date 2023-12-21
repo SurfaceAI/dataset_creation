@@ -15,7 +15,7 @@
     <Choice value="good"/>
 	<Choice value="intermediate"/>
     <Choice value="bad"/>
-    <Choice value="very bad"/>
+    <Choice value="very_bad"/>
   </Choices>
 
  <Choices name="roadtype" toName="image" showInline="true">
@@ -24,6 +24,12 @@
 	<Choice value="pedestrian"/>
     <Choice value="path (unspecified)"/>
   </Choices>
+
+  <Choices name="rails" toName="image" showInline="true">
+    <Choice value="rails (seperate bike lane)"/>
+    <Choice value="rails (bikes affected)"/>
+  </Choices>
+
 
    <Choices name="nostreet" toName="image" showInline="true">
     <Choice value="(mainly) no street visible"/>

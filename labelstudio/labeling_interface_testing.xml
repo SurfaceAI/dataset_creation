@@ -17,7 +17,7 @@
     <Choice value="good"/>
 	<Choice value="intermediate"/>
     <Choice value="bad"/>
-    <Choice value="very bad"/>
+    <Choice value="very_bad"/>
   </Choices>
 
     <Header value="Cycleway" />
@@ -35,7 +35,7 @@
     <Choice value="good"/>
 	<Choice value="intermediate"/>
     <Choice value="bad"/>
-    <Choice value="very bad"/>
+    <Choice value="very_bad"/>
   </Choices>
   
         <Header value="Pedestrian"/>
@@ -54,7 +54,7 @@
     <Choice value="good"/>
 	<Choice value="intermediate"/>
     <Choice value="bad"/>
-    <Choice value="very bad"/>
+    <Choice value="very_bad"/>
   </Choices>
 
             <Header value="General"/>
