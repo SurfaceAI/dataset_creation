@@ -401,25 +401,7 @@ def create_training_data(exclude_cities, train_data_version):
         metadata["month"] = pd.to_datetime(metadata["captured_at"], unit="ms").dt.month
         metadata["hour"] = pd.to_datetime(metadata["captured_at"], unit="ms").dt.hour
 
-        metadata["surface_clean"] = metadata["surface"].replace(
-            [
-                "compacted",
-                "gravel",
-                "ground",
-                "fine_gravel",
-                "dirt",
-                "grass",
-                "earth",
-                "sand",
-            ],
-            "unpaved",
-        )
-        metadata["surface_clean"] = metadata["surface_clean"].replace(
-            ["cobblestone", "unhewn_cobblestone"], "sett"
-        )
-        metadata["surface_clean"] = metadata["surface_clean"].replace(
-            "concrete:plates", "concrete"
-        )
+        metadata = utils.clean_surface(metadata)
 
         surfaces = [
             const.ASPHALT,

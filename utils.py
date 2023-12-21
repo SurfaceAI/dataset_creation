@@ -72,6 +72,8 @@ def get_tile_data(tile):
 
 
 def get_tile_metadata(tile):
+    """
+    """
     global current_token
     header = [
         "tile_id",
@@ -201,3 +203,28 @@ def save_sql_table_to_csv(table_name, output_path, where_clause="where highway !
         conn.commit()
     conn.close()
     print("csv exported from db")
+
+
+
+def clean_surface(metadata):
+    metadata["surface"] = metadata.surface.str.strip()
+    metadata["surface_clean"] = metadata["surface"].replace(
+        [
+            "compacted",
+            "gravel",
+            "ground",
+            "fine_gravel",
+            "dirt",
+            "grass",
+            "earth",
+            "sand",
+        ],
+        "unpaved",
+    )
+    metadata["surface_clean"] = metadata["surface_clean"].replace(
+        ["cobblestone", "unhewn_cobblestone"], "sett"
+    )
+    metadata["surface_clean"] = metadata["surface_clean"].replace(
+        "concrete:plates", "concrete"
+    )
+    return metadata
