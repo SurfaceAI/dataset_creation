@@ -1,0 +1,10 @@
+pandas
+numpy
+pillow
+rpy2
+mapbox
+mercantile
+psycopg2
+pytest
+vt2geojson
+requests
