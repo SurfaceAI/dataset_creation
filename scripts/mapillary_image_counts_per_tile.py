@@ -30,7 +30,7 @@ def counts_per_tile(tile):
     if tile_no % 10 == 0:
         print(f"current tile number {tile_no}")
 
-    data = utils.get_tile_data(tile)
+    data = utils.get_tile_images(tile)
     return len(data["features"])
 
 
