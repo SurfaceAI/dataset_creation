@@ -17,11 +17,15 @@ def test_read_raster():
 
 
 def test_create_raster():
-    rf.create_raster(0,1,0,1, "epsg:4326", "./tests/test_output1.tif", nrows=10, ncols=10)
+    rf.create_raster(
+        0, 1, 0, 1, "epsg:4326", "./tests/test_output1.tif", nrows=10, ncols=10
+    )
     assert os.path.exists("./tests/test_output1.tif")
     os.remove("./tests/test_output1.tif")
 
-    rf.create_raster(0,1,0,1, "epsg:4326", "./tests/test_output2.tif",resolution=0.1)
+    rf.create_raster(
+        0, 1, 0, 1, "epsg:4326", "./tests/test_output2.tif", resolution=0.1
+    )
     assert os.path.exists("./tests/test_output2.tif")
     os.remove("./tests/test_output2.tif")
 
@@ -33,12 +37,16 @@ def test_raster_to_tiledf():
 
 
 def test_rasterize_points():
-    rf.rasterize_points("./tests/test.tif", "./tests/test_points.csv", 3857, "./tests/test_output.tif")
+    rf.rasterize_points(
+        "./tests/test.tif", "./tests/test_points.csv", 3857, "./tests/test_output.tif"
+    )
     assert os.path.exists("./tests/test_output.tif")
     os.remove("./tests/test_output.tif")
 
 
 def test_raster_ids_for_points():
-    rf.raster_ids_for_points("./tests/test.tif", "./tests/test_points.csv", "./tests/test_output.csv", 3857)
+    rf.raster_ids_for_points(
+        "./tests/test.tif", "./tests/test_points.csv", "./tests/test_output.csv", 3857
+    )
     assert os.path.exists("./tests/test_output.csv")
     os.remove("./tests/test_output.csv")

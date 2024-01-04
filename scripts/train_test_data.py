@@ -33,9 +33,9 @@ def create_test_data(cities):
         ### download all tile metadata
         if not os.path.exists(config.test_city_tiles_path.format(city)):
             tiles = list()
-            tiles += list(mercantile.tiles(
-                bbox[0], bbox[1], bbox[2], bbox[3], config.zoom
-            ))
+            tiles += list(
+                mercantile.tiles(bbox[0], bbox[1], bbox[2], bbox[3], config.zoom)
+            )
 
             with open(
                 config.test_city_tiles_path.format(city), "w", newline=""

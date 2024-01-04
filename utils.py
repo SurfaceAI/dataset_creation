@@ -17,19 +17,20 @@ with open(config.token_path, "r") as file:
     access_tokens = [line.strip() for line in file.readlines()]
 current_token = 0
 
+
 def tile_center(xtile, ytile, zoom):
     """Return longitude,latitude centroid coordinates of mercantile tile
     Args:
         xtile (int): x tile coordinate
         ytile (int): y tile coordinate
         zoom (int): zoom level
-    
+
     Returns:
         (float, float): A tuple of longitude, latitude.
     """
     upperleft = mercantile.ul(xtile, ytile, zoom)
-    upperright = mercantile.ul(xtile+1, ytile, zoom)
-    lowerleft =  mercantile.ul(xtile, ytile-1, zoom)
+    upperright = mercantile.ul(xtile + 1, ytile, zoom)
+    lowerleft = mercantile.ul(xtile, ytile - 1, zoom)
 
     # not completely exact but good enough for our purposes
     lon = (upperleft.lng + upperright.lng) / 2
@@ -183,8 +184,8 @@ def query_and_write_img_metadata(tiles, out_path):
 
 
 def intersect_mapillary_osm(tile_id, table_name):
-    """Function to interact with SQL database: 
-    for a given tile_id, intersect all images within the tile with OSM streets and create columns "surface", "smoothness" and "highway" for the given table_name. 
+    """Function to interact with SQL database:
+    for a given tile_id, intersect all images within the tile with OSM streets and create columns "surface", "smoothness" and "highway" for the given table_name.
     These columns are filled with values accordring to the OSM intersection.
 
     Args:
@@ -240,7 +241,6 @@ def save_sql_table_to_csv(table_name, output_path, where_clause="where highway !
         conn.commit()
     conn.close()
     print("csv exported from db")
-
 
 
 def clean_surface(metadata):

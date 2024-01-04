@@ -27,7 +27,7 @@ def create_raster(
     xmin, xmax, ymin, ymax, crs, output_path, nrows=False, ncols=False, resolution=False
 ):
     """create rasster based on bounding box coordinates, crs, output_path, and either nrows, ncols, or resolution.
-    Wrapper for 
+    Wrapper for
 
     Args:
         xmin (float): xmin coordinate of bounding box (in given CRS)
@@ -135,7 +135,7 @@ def raster_to_tiledf(raster_path):
 def rasterize_points(raster_path, data_path, crs, output_path, fun="max"):
     """Create and store a raster from a point dataset (r wrapper), where each point represents one raster centroid and the value "image_count" the respective value to create a raster from.
     Currently 'image_count' is the hardcoded field name which is expected in the dataset.
-    
+
     Args:
         raster_path (str): path to raster template to rasterize points to
         data_path (str): path to csv point dataset
@@ -181,7 +181,7 @@ def raster_ids_for_points(raster_path, data_path, output_path, crs):
         data_path (str): path to point dataset to get raster cell ids for
         output_path (str): path to save csv to
         crs (int): crs of raster template as EPSG code
-    
+
     """
     robjects.r(
         """

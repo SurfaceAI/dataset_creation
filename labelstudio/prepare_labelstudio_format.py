@@ -27,7 +27,7 @@ def training_entity(row, img_folder):
                         "to_name": "image",
                         "type": "choices",
                         "value": {"choices": [row["smoothness"]]},
-                    }
+                    },
                 ]
             }
         ],
@@ -53,7 +53,7 @@ def test_entity(row, img_folder):
                         "to_name": "image",
                         "type": "choices",
                         "value": {"choices": [row["smoothness"]]},
-                    }
+                    },
                 ]
             }
         ]
@@ -65,7 +65,7 @@ def create_labelstudio_input_file(is_testdata, metadata_path, img_url, output_pa
     if ("surface_clean") not in df.columns:
         df = utils.clean_surface(df)
 
-    #df["surface"] = df.surface.str.strip()
+    # df["surface"] = df.surface.str.strip()
     df["smoothness"] = df.smoothness.str.strip()
 
     # Convert each row to JSON object and collect them in a list
@@ -92,10 +92,11 @@ if __name__ == "__main__":
     # output_path = f"data/{city}/predictions.json"
     # create_labelstudio_input_file(True, metadata_path, img_url, output_path)
 
-
     ## training data
     # entire dataset
-    metadata_path = config.train_image_selection_metadata_path.format(config.training_data_version)
+    metadata_path = config.train_image_selection_metadata_path.format(
+        config.training_data_version
+    )
 
     # only sample
     metadata_path = config.train_image_sample_metadata_path.format(
