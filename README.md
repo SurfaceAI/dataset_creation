@@ -116,7 +116,7 @@ First test with Berlin data. See [script](https://github.com/SurfaceAI/internal_
 - 10% cut off at intersections (start and end of roads)
 - no filter by date
 - max 5 images per sequence
-- about **1000** images per class
+- about **100** images per class
 - no panorama images
 - filter, only relevant classes:
   - asphalt / concrete / paving_stones: excellent, good, intermediate, bad
@@ -124,3 +124,23 @@ First test with Berlin data. See [script](https://github.com/SurfaceAI/internal_
   - unpaved: intermediate, bad, very_bad
 - **do not** remove images in winter (dec, jan, feb) **> such that they can be included in the "no classification possible class**
 - **do not** remove images at night (only between 8am and 6pm) **> such that they can be included in the "no classification possible class**
+
+**V5**
+
+- sample from entire Germany.
+- sampling of train tiles:
+  - more than 500 img per tile
+  - **300 tiles per surface/smoothness combination where according to OSM at least a certain amount of streets hold this tag combination** (threshold set based on median of respective count distribution)
+- Mapillary - OSM intersection: 
+  - 10% cut off at intersections (start and end of roads)
+  - distance < 2 meters - then take *closest* road to img, if img intersects with multiple roads, not *random* road
+- Filter images from intersected image pool:
+  - max 5 images per sequence
+  - **max 20 images per mercantile tile**
+  - no panorama images
+  - filter, only relevant classes:
+    - asphalt / concrete / paving_stones: excellent, good, intermediate, bad
+    - sett: good, intermediate, bad
+    - unpaved: intermediate, bad, very_bad
+  - about **2000** images per class
+    - **prefer pedestrian and cycleway**: take 500 images for surface/smoothness classification only from highway type "pedestrian" and "cycleway" (if not as many available, take max. images available). Fill rest of 1.500 images with remaining images. 

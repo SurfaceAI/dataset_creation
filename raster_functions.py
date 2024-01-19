@@ -42,8 +42,8 @@ def create_raster(
     """
     robjects.r(
         """
-    library(terra)
-    library(sf)
+    library(terra)|> suppressPackageStartupMessages()
+    library(sf)|> suppressPackageStartupMessages()
             
     create_raster_rows_cols <- function(xmin, xmax, ymin, ymax, crs, output_path, nrows, ncols){
         raster_template <- terra::rast(crs= terra::crs(crs), 
@@ -98,8 +98,8 @@ def raster_to_tiledf(raster_path):
     # centroid to x y z
     robjects.r(
         """
-    library(terra)
-    library(sf)
+    library(terra)|> suppressPackageStartupMessages()
+    library(sf)|> suppressPackageStartupMessages()
                    
     raster_to_tiledf <- function(raster_path){
         raster <- rast(raster_path)
@@ -124,8 +124,8 @@ def raster_to_tiledf(raster_path):
     tiles_x_y = df.apply(
         lambda row: mercantile.tile(row["lon"], row["lat"], config.zoom), axis=1
     )
-    df["x"] = [tiles_x_y[i][0] for i in range(0, len(tiles_x_y))]
-    df["y"] = [tiles_x_y[i][1] for i in range(0, len(tiles_x_y))]
+    df["x"] = [tiles_x_y.iloc[i][0] for i in range(0, len(tiles_x_y))]
+    df["y"] = [tiles_x_y.iloc[i][1] for i in range(0, len(tiles_x_y))]
     df["tile_id"] = (
         df["x"].astype(str) + "_" + df["y"].astype(str) + "_" + str(config.zoom)
     )
@@ -185,8 +185,8 @@ def raster_ids_for_points(raster_path, data_path, output_path, crs):
     """
     robjects.r(
         """
-        library(terra)
-        library(sf)
+        library(terra)|> suppressPackageStartupMessages()
+        library(sf)|> suppressPackageStartupMessages()
                
         raster_ids_for_points <-function(raster_path, data_path, output_path, crs){
                

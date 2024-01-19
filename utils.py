@@ -8,6 +8,9 @@ import time
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import DictCursor
+import pandas as pd
+import geopandas as gpd
+from shapely.geometry import Point
 
 import database_credentials as db
 
@@ -175,7 +178,9 @@ def query_and_write_img_metadata(tiles, out_path):
         for i in range(0, len(tiles)):
             if i % 10 == 0:
                 print(f"{i} tiles of {len(tiles)}")
-            tile = tiles.iloc[i,]
+            tile = tiles.iloc[
+                i,
+            ]
             header, output = get_images_metadata(tile)
             if i == 0:
                 csvwriter.writerow(header)
@@ -198,10 +203,9 @@ def intersect_mapillary_osm(tile_id, table_name):
     bbox = mercantile.bounds(int(tilex), int(tiley), int(zoom))
     with open(config.sql_script_intersect_osm_mapillary_path, "r") as file:
         query = file.read()
-        query = str.replace(query, "{table_name}", table_name)
 
     query = query.format(
-        bbox[0], bbox[1], bbox[2], bbox[3], bbox[0], bbox[1], bbox[2], bbox[3]
+        bbox0 = bbox[0], bbox1 = bbox[1], bbox2 = bbox[2], bbox3 = bbox[3], table_name=table_name
     )
 
     # Connect to your PostgreSQL database
@@ -218,7 +222,9 @@ def intersect_mapillary_osm(tile_id, table_name):
     # print(f"{tile_id} took {(round(end_query-start_query))} secs for intersection")
 
 
-def save_sql_table_to_csv(table_name, output_path, where_clause="where highway != ''"):
+def save_sql_table_to_csv(
+    table_name, output_path, columns=None, where_clause="where highway != ''"
+):
     """Download table from SQL database and save as csv
 
     Args:
@@ -226,6 +232,30 @@ def save_sql_table_to_csv(table_name, output_path, where_clause="where highway !
         output_path (str): path of csv to save table to
         where_clause (str, optional):Where clause to filter table before storing to csv. Defaults to "where highway != ''".
     """
+
+    # default columns
+    if columns is None:
+        columns = [
+            "id",
+            "tile_id",
+            "sequence_id",
+            "creator_id",
+            "captured_at",
+            "is_pano",
+            "highway",
+            "surface",
+            "smoothness",
+            "cycleway",
+            "cycleway_surface",
+            "cycleway_smoothness",
+            "cycleway_right",
+            "cycleway_right_surface",
+            "cycleway_right_smoothness",
+            "cycleway_left",
+            "cycleway_left_surface",
+            "cycleway_left_smoothness",
+        ]
+
     with open(config.sql_script_save_db_to_csv_path, "r") as file:
         query = file.read()
     absolute_path = os.path.join(os.getcwd(), output_path)
@@ -237,9 +267,25 @@ def save_sql_table_to_csv(table_name, output_path, where_clause="where highway !
         host=db.host,
     )
     with conn.cursor(cursor_factory=DictCursor) as cursor:
-        cursor.execute(sql.SQL(query.format(table_name, where_clause, absolute_path)))
+        cursor.execute(
+            sql.SQL(
+                query.format(
+                    table_name=table_name,
+                    columns=columns,
+                    where_clause=where_clause,
+                    absolute_path=absolute_path,
+                )
+            )
+        )
         conn.commit()
     conn.close()
+
+    # clean table bc trailing whitespace is stored during export # TODO: better way while exporting from SQL?
+    df = pd.read(absolute_path)
+    for column in columns:
+        if df[column].dtype == "str":
+            df[column] = df[column].str.strip()
+    df.to_csv(absolute_path, index=False)
     print("csv exported from db")
 
 
@@ -273,3 +319,28 @@ def clean_surface(metadata):
         "concrete:plates", "concrete"
     )
     return metadata
+
+
+def write_tiles_within_boundary(csv_path, boundary):
+            
+    bbox = boundary.total_bounds
+
+    tiles = list()
+    tiles += list(
+        mercantile.tiles(bbox[0], bbox[1], bbox[2], bbox[3], config.zoom)
+    )
+
+    with open(
+        csv_path, "w", newline=""
+    ) as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(["x", "y", "z", "lat", "lon"])
+        for i in range(0, len(tiles)):
+            tile = tiles[i]
+            lon, lat = tile_center(tile.x, tile.y, config.zoom)
+            point = gpd.GeoDataFrame(
+                geometry=[Point(lon, lat)], crs="EPSG:4326"
+            )
+            # if tile center within boundary of city, write to csv
+            if boundary.geometry.contains(point)[0]:
+                csvwriter.writerow([tile.x, tile.y, config.zoom, lat, lon])
