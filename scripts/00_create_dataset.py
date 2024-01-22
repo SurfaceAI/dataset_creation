@@ -37,11 +37,11 @@ else:
    print(f"tile metadata already queried ({config.train_tiles_metadata_path.format(config.ds_version)}), step is skipped")
 
 # Step 3: intersect all mapillary images (metadata) with OSM data to retrieve respective surface/smoothness/highway tags
-# takes some time: for ~4000 tiles, ~7h
+# takes some time: for ~4000 tiles, ~16h
 if not os.path.exists(config.train_image_metadata_with_tags_path.format(config.ds_version)):
     s3.intersect_mapillary_osm()
 else:
-    print("already intersected with OSM, step is skipped")
+    print(f"already intersected with OSM {config.train_image_metadata_with_tags_path.format(config.ds_version)}, step is skipped")
 
 # Step 4: filter and select a sample of training images from all images within the selected training tiles that have OSM tags
 if not os.path.exists(config.train_image_selection_metadata_path.format(config.ds_version)):

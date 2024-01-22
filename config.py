@@ -22,8 +22,8 @@ max_img_per_cell = 5
 # test data paramenters
 # training images
 ds_version = "v5"
-max_img_per_sequence_train = 5
-max_img_per_tile = 20
+max_img_per_sequence_train = 10
+max_img_per_tile = 5
 tile_sample_size = 300
 min_images = 500
 min_tags = 50

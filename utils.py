@@ -271,7 +271,7 @@ def save_sql_table_to_csv(
             sql.SQL(
                 query.format(
                     table_name=table_name,
-                    columns=columns,
+                    columns=','.join(columns),
                     where_clause=where_clause,
                     absolute_path=absolute_path,
                 )
@@ -281,9 +281,9 @@ def save_sql_table_to_csv(
     conn.close()
 
     # clean table bc trailing whitespace is stored during export # TODO: better way while exporting from SQL?
-    df = pd.read(absolute_path)
+    df = pd.read_csv(absolute_path)
     for column in columns:
-        if df[column].dtype == "str":
+        if (df[column].dtype == "str") | (df[column].dtype == "object"):
             df[column] = df[column].str.strip()
     df.to_csv(absolute_path, index=False)
     print("csv exported from db")
