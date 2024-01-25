@@ -35,14 +35,17 @@ imgs_per_class = 2000
 n_annotators = 3
 # n img per class for for interrater reliability
 n_irr = 10
+
 # n img per cluss for each chunk when annotating
+chunk_ids = [0, 1]
 n_per_chunk = 100
 labelstudio_absolute_path = "https://freemove.f4.htw-berlin.de/data/local-files/?d={}"
 labelstudio_predictions_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}/sample_predictions.json"
 # img ids that have previously already been labeled and should be excluded in further labeling to avoid redundant work
 labeled_imgids_path = os.path.join(data_folder, "labeled_imgids.txt")
-interrater_reliability_chunk_ids_path = os.path.join(data_folder, "{}_interrater_reliability_chunk_ids.{}")
-annotator_ids_path = os.path.join(data_folder, "{}_annotator{}_img_ids.{}")
+chunks_folder = os.path.join(data_folder, "{}", "chunks")
+interrater_reliability_img_ids_path = os.path.join(chunks_folder, "interrater_reliability_img_ids.{}")
+annotator_ids_path = os.path.join(chunks_folder, "c{}_annotator{}_img_ids.{}")
 
 # possible surface / smoothness combinations
 surfaces = [
@@ -77,23 +80,25 @@ filtered_autobahn_path = os.path.join(data_folder, "{}", "autobahn_filtered.geoj
 # berlin_raster_image_counts = 'data/berlin_tile_raster.tif'
 
 # test city paths (bracket will be filled with city name)
-test_city_tiles_path = os.path.join(data_folder, "{}", "city_tiles.csv")
-test_tiles_metadata_path = os.path.join(data_folder, "{}", "all_images_metadata.csv")
-test_image_selection_metadata_path = os.path.join(data_folder, "{}", "image_selection_metadata.csv")
-test_image_folder = os.path.join(data_folder, "{}", "images")
-test_small_raster_template = os.path.join(data_folder, "{}", "small_raster_template.tif")
-test_small_raster_counts = os.path.join(data_folder, "{}", "small_raster_counts.tif")
-test_image_metadata_with_tags_path = os.path.join(data_folder, "{}","img_metadata_with_tags.csv")
-boundary = os.path.join(data_folder, "{}", "boundary.geojson")
+test_data_folder = os.path.join(data_folder, "test_data")
+test_city_tiles_path = os.path.join(test_data_folder, "{}", "city_tiles.csv")
+test_tiles_metadata_path = os.path.join(test_data_folder, "{}", "all_images_metadata.csv")
+test_image_selection_metadata_path = os.path.join(test_data_folder, "{}", "image_selection_metadata.csv")
+test_image_folder = os.path.join(test_data_folder, "{}", "images")
+test_small_raster_template = os.path.join(test_data_folder, "{}", "small_raster_template.tif")
+test_small_raster_counts = os.path.join(test_data_folder, "{}", "small_raster_counts.tif")
+test_image_metadata_with_tags_path = os.path.join(test_data_folder, "{}","img_metadata_with_tags.csv")
+boundary = os.path.join(test_data_folder, "{}", "boundary.geojson")
 
 # train data paths (bracket will be filled with training data version)
-train_tiles_metadata_path = os.path.join(data_folder,"{}_train_tiles_metadata.csv")
-train_tiles_selection_path = os.path.join(data_folder,"{}_train_tiles_selection.csv")
-train_image_selection_metadata_path = os.path.join(data_folder,"{}_train_image_selection_metadata.csv")
+train_tiles_metadata_path = os.path.join(data_folder,"{}", "train_tiles_metadata.csv")
+train_tiles_selection_path = os.path.join(data_folder,"{}", "train_tiles_selection.csv")
+train_image_selection_metadata_path = os.path.join(data_folder,"{}", "train_image_selection_metadata.csv")
 #train_image_sample_metadata_path = os.path.join(data_folder,"{}_train_image_sample_metadata.csv")
 #train_image_sample_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}/00_sample"
-train_image_folder = os.path.join(data_folder,"{}_train_images")
-train_image_metadata_with_tags_path = os.path.join(data_folder,"{}_img_metadata_with_tags.csv")
+train_image_folder = os.path.join(data_folder,"{}", "train_images")
+chunk_image_folder = os.path.join(train_image_folder, "c{}")
+train_image_metadata_with_tags_path = os.path.join(data_folder,"{}", "img_metadata_with_tags.csv")
 
 # sql scripts
 sql_scripts_path = os.path.join("scripts", "sql")

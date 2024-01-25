@@ -64,6 +64,7 @@ predictions_annotations["combined_label_pred"] = predictions_annotations.surface
 # predictions_annotations[["id", "sequence_id", "creator_id", "captured_at", "highway_osm", "surface_osm", "smoothness_osm", "surface_annotated", "smoothness_annotated", "highway_annotated"]].to_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/V4/metadata/v4_labels.csv")
 
 surface_cm = predictions_annotations.groupby(["surface", "surface_pred"]).size()
+surface_cm = predictions_annotations.groupby(["surface_pred", "surface"]).size()
 smoothness_cm = predictions_annotations.groupby(["combined_label", "combined_label_pred"]).size()
 #highway_cm = predictions_annotations.groupby(["highway_osm", "highway_annotated"]).size()
 

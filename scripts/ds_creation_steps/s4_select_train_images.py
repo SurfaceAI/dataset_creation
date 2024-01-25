@@ -18,6 +18,8 @@ def select_training_sample():
         metadata["month"] = pd.to_datetime(metadata["captured_at"], unit="ms").dt.month
         metadata["hour"] = pd.to_datetime(metadata["captured_at"], unit="ms").dt.hour
         metadata = utils.clean_surface(metadata)
+        
+        metadata = utils.clean_smoothness(metadata)
 
         # drop surface specific smoothness
         cleaned_metadata = pd.DataFrame()
@@ -29,7 +31,7 @@ def select_training_sample():
                         (
                             (metadata["surface_clean"] == surface)
                             & (
-                                metadata["smoothness"].isin(
+                                metadata["smoothness_clean"].isin(
                                     config.surf_smooth_comb[surface]
                                 )
                             )
@@ -62,7 +64,7 @@ def select_training_sample():
             metadata.groupby(["sequence_id"])  # restrict number of images per sequence
             .sample(config.max_img_per_sequence_train, random_state=1, replace=True)
             .drop_duplicates(subset="id")
-            .groupby(["tile_id", "surface_clean", "smoothness"])  # restrict number of images per tile (per class)
+            .groupby(["tile_id", "surface_clean", "smoothness_clean"])  # restrict number of images per tile (per class)
             .sample(config.max_img_per_tile, random_state=1, replace=True)
             .drop_duplicates(subset="id")
 
@@ -76,9 +78,9 @@ def select_training_sample():
                 metadata_temp = ((metadata.loc[
                     (
                         (metadata["surface_clean"] == surface)
-                        & (metadata["smoothness"] == smoothness)
+                        & (metadata["smoothness_clean"] == smoothness)
                         & (metadata["highway"].isin(["pedestrian", "cycleway"]))),])
-                .groupby(["surface_clean", "smoothness"])
+                .groupby(["surface_clean", "smoothness_clean"])
                 .sample(500, random_state=1, replace=True)
                 .drop_duplicates(subset="id")
                 )
@@ -90,7 +92,7 @@ def select_training_sample():
                         (
                             (~metadata.id.isin(metadata_temp.id))
                             & (metadata["surface_clean"] == surface)
-                            & (metadata["smoothness"] == smoothness),
+                            & (metadata["smoothness_clean"] == smoothness),
                         )
                     ]
                 )

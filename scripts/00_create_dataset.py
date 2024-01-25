@@ -3,8 +3,8 @@ from ds_creation_steps import s1_select_train_tiles as s1
 from ds_creation_steps import s2_get_train_tiles_metadata as s2
 from ds_creation_steps import s3_intersect_mapillary_osm as s3
 from scripts.ds_creation_steps import s4_select_train_images as s4
-from ds_creation_steps import s5_download_training_images as s5
-from ds_creation_steps import s6_prepare_manual_annotation as s6
+from scripts.ds_creation_steps import s5_prepare_manual_annotation as s5
+from scripts.ds_creation_steps import s6_download_training_images as s6
 
 import sys
 import os
@@ -49,12 +49,13 @@ if not os.path.exists(config.train_image_selection_metadata_path.format(config.d
 else:
     print(f"training images already selected ({config.train_image_selection_metadata_path.format(config.ds_version)}), step is skipped")
 
-# Step 5: finally, download our selected training images
-# download of 100 images takes ~xx min
-if not os.path.exists(config.train_image_folder.format(config.ds_version)):
-    s5.download_training_images()
-else:
-    print(f"training images already downloaded, step is skipped")
 
-# Step 6: prepare data for manual labeling with labelstudio
-s6.prepare_manual_annotation()
+# Step 5: prepare data for manual labeling with labelstudio
+s5.prepare_manual_annotation(config.chunk_ids)
+
+# Step 6: finally, download our selected training images
+# download of 5500 images takes ~110 mins
+#if not os.path.exists(img_folder):
+s6.download_training_images(config.chunk_ids)
+#else:
+print(f"training images already downloaded, step is skipped")

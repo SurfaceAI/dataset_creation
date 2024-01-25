@@ -13,6 +13,7 @@ import geopandas as gpd
 from shapely.geometry import Point
 
 import database_credentials as db
+import constants as const
 
 # set access tokens
 with open(config.token_path, "r") as file:
@@ -289,6 +290,28 @@ def save_sql_table_to_csv(
     print("csv exported from db")
 
 
+def clean_smoothness(metadata):
+    """Clean smoothness column of metadata dataframe according to defined OSM smoothness values
+
+    Args:
+        metadata (df): dataframe with image metadata, including column "smoothness"
+
+    Returns:
+        df: dataframe with cleaned smoothness column "smoothness_clean"
+    """
+    metadata["smoothness"] = metadata.smoothness.str.strip()
+    metadata["smoothness_clean"] = metadata["smoothness"].replace(
+        [
+            "horrible",
+            "very_horrible",
+            "impassable",
+        ],
+        const.VERY_BAD,
+    )
+
+    metadata["smoothness_clean"] = metadata["smoothness_clean"].replace(["perfect", "very_good"], const.EXCELLENT)
+    return metadata
+
 def clean_surface(metadata):
     """Clean surface column of metadata dataframe according to defined OSM surface values
 
@@ -310,7 +333,7 @@ def clean_surface(metadata):
             "earth",
             "sand",
         ],
-        "unpaved",
+        const.UNPAVED,
     )
     metadata["surface_clean"] = metadata["surface_clean"].replace(
         ["cobblestone", "unhewn_cobblestone"], "sett"
