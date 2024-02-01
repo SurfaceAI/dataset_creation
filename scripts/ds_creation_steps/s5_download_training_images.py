@@ -90,4 +90,4 @@ def download_training_images(chunk_ids=None):
         # metadata.groupby(['surface_clean', 'smoothness']).size()
 
 if __name__ == "__main__":
-    download_training_images(chunk_ids=[1])
+    download_training_images()

@@ -144,3 +144,14 @@ First test with Berlin data. See [script](https://github.com/SurfaceAI/internal_
     - unpaved: intermediate, bad, very_bad
   - about **2000** images per class
     - **prefer pedestrian and cycleway**: take 500 images for surface/smoothness classification only from highway type "pedestrian" and "cycleway" (if not as many available, take max. images available). Fill rest of 1.500 images with remaining images. 
+
+  
+Dataset V5 is not labeled at once, but in different *chunks* which are continuously added to the stack of labeled images. However, each chunk is already used individually (or combined).
+Thus, there are *subsets* of dataset **V5** named according to their chunk:
+
+- c0 is a set of 180 images, which have been labeled by all three annotators to compute interrater reliability
+- c1 is a set of 3x889=2667 images. (Initially, a set of 300 images per class was sampled from V5. Then, combined predictor (OSM label+model prediction based on V4)) was used and only images where both predictors agreed where included for labeling in c1, resulting in about half (2667 from initially 5400) of the images.
+
+**V6**
+
+A combination of labeled images from V4, V5_c0 and V5_c1.

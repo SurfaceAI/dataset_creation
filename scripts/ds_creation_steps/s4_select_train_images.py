@@ -1,5 +1,7 @@
 import pandas as pd
 import sys
+import os 
+import math
 
 # setting path
 sys.path.append("./")
@@ -10,8 +12,7 @@ import config
 # further filter image selection for training dataset
 def select_training_sample():
         metadata = pd.read_csv(
-            config.train_image_metadata_with_tags_path.format(config.ds_version)
-        )
+            config.train_image_metadata_with_tags_path.format(config.ds_version), dtype={"id": str})
         # drop potential duplicates
         metadata.drop_duplicates(subset="id", inplace=True)
 
@@ -110,5 +111,81 @@ def select_training_sample():
             index=False,
         )
 
+def create_chunks(chunk_ids):
+    # read and shuffle metadata
+    # shuffle images so they are not ordered by surface/smoothness of location
+    chunks_folder = config.chunks_folder.format(config.ds_version)
+    if not os.path.exists(chunks_folder):
+        os.makedirs(chunks_folder)
+
+    metadata = (pd
+                    .read_csv(config.train_image_selection_metadata_path.format(config.ds_version), dtype={"id": str})
+                    .sample(frac=1, random_state=1).reset_index(drop=True)
+                )
+
+    if (chunk_ids is None) or (0 in chunk_ids):
+        # create a file that holds all that image IDs that should be classified by everyone for interrater reliability
+        img_ids_irr = metadata.groupby(["surface_clean", "smoothness_clean"]).sample(
+            config.n_irr, random_state=1)["id"].tolist()
+        with open(config.interrater_reliability_img_ids_path.format(config.ds_version, "txt"), "w") as file:
+            for item in img_ids_irr:
+                file.write("%s\n" % item)
+    
+    if (chunk_ids is None) or (max(chunk_ids) > 0):
+        if chunk_ids is None:
+            chunk_ids = range(1, math.ceil(len(metadata) / config.n_per_chunk))
+        else:
+            chunk_ids = [x for x in chunk_ids if x > 0]
+
+        # remove ids that have previously been labeled
+        with open(config.labeled_imgids_path, "r") as file:
+            already_labled_ids = file.read().splitlines()
+        metadata = metadata[~metadata.id.isin(already_labled_ids)]
+
+        # remove irr_chunk_ids from metadata
+        with open(config.interrater_reliability_img_ids_path.format(config.ds_version, "txt"), "r") as file:
+            img_ids_irr = [line.strip() for line in file.readlines()]
+        metadata = metadata.loc[(~metadata.id.isin(img_ids_irr)),:]
+
+        # remove images from previous chunks
+        if min(chunk_ids) > 1:
+            for i in range(1, min(chunk_ids)):
+                with open(config.chunk_img_ids_path.format(config.ds_version, i, "txt"), "r") as file:
+                    already_labled_ids = file.read().splitlines()
+                metadata = metadata[~metadata.id.isin(already_labled_ids)]
+        
+        for chunk_id in chunk_ids:
+            # create a txt file for each chunk
+            chunk_imgids = []
+            md_grouped = (metadata.groupby(["surface_clean", "smoothness_clean"]))
+                
+            # are there enough imgs left to sample from?
+            # if not: take the rest of images for classes below the n chunk size and append them
+            groups_below_chunksize = md_grouped.size()[md_grouped.size() < (config.n_per_chunk*config.n_annotators)]
+            if len(groups_below_chunksize) > 0:
+                chunk_imgids += (md_grouped
+                .sample(frac=1, random_state=1)
+                .set_index(["surface_clean", "smoothness_clean"])
+                .loc[groups_below_chunksize.index]["id"]
+                .tolist()
+                )
+
+            # then append the chunk size for the remaining classes
+            groups_in_chunksize = md_grouped.size()[md_grouped.size() >= (config.n_per_chunk*config.n_annotators)]
+
+            chunk_imgids += (metadata
+                .set_index(["surface_clean", "smoothness_clean"])
+                .loc[groups_in_chunksize.index]
+                .groupby(["surface_clean", "smoothness_clean"])
+                .sample((config.n_per_chunk*config.n_annotators), random_state=1)["id"]
+                .tolist()
+            )
+
+            with open(config.chunk_img_ids_path.format(config.ds_version, chunk_id, "txt"), "w") as file:
+                for item in chunk_imgids:
+                    file.write("%s\n" % item)
+            
+     
 if __name__ == "__main__":
-    select_training_sample()
+    #select_training_sample()
+    create_chunks()

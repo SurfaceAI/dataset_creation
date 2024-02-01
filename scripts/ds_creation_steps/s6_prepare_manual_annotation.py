@@ -80,86 +80,81 @@ def create_labelstudio_input_file(metadata, is_testdata, output_path):
         file.write(result_json_str)
 
 
+# filter to only include images with confident surface prediction
+def filter_by_model_prediction(metadata, chunk_id):
+    model_prediction = pd.read_csv(config.model_prediction_path.format(config.ds_version, config.ds_version, chunk_id), dtype={"image_id": str})   
+
+
+    df = (metadata
+     .set_index("id")
+     .join(model_prediction.set_index("image_id"), how="left")
+    )
+    df["combined_prediction"] = "no prediction"
+    df.loc[df.model_prediction == df.surface_clean, "combined_prediction"] = df[df.model_prediction == df.surface_clean].surface_clean
+
+    with open(config.chunk_filtered_img_ids_path.format(config.ds_version, chunk_id, "txt"), "w") as file:
+        for item in df[df.combined_prediction == "no prediction"].index.tolist():
+            file.write("%s\n" % item)
+
+    return (df[df.combined_prediction != "no prediction"].index.tolist())
+
 def prepare_manual_annotation(chunk_ids=None):
     # read and shuffle metadata
     # shuffle images so they are not ordered by surface/smoothness of location
-    chunks_folder = config.chunks_folder.format(config.ds_version)
-    if not os.path.exists(chunks_folder):
-        os.makedirs(chunks_folder)
-
     metadata = (pd
                     .read_csv(config.train_image_selection_metadata_path.format(config.ds_version), dtype={"id": str})
                     .sample(frac=1, random_state=1).reset_index(drop=True)
                 )
 
-    if (chunk_ids is None) or (0 in chunk_ids):
-        # create a file that holds all that image IDs taht should be classified by everyone for interrater reliability
-        img_ids_irr = metadata.groupby(["surface_clean", "smoothness_clean"]).sample(
-            config.n_irr, random_state=1)["id"].tolist()
-        with open(config.interrater_reliability_img_ids_path.format(config.ds_version, "txt"), "w") as file:
-            for item in img_ids_irr:
-                file.write("%s\n" % item)
-        create_labelstudio_input_file(metadata[metadata.id.isin(img_ids_irr)], False, 
-                                    config.interrater_reliability_img_ids_path.format(config.ds_version, "json"))
+    if chunk_ids is None:
+        chunk_ids = range(1, math.ceil(len(metadata) / config.n_per_chunk))
 
-    
-    if (chunk_ids is None) or (max(chunk_ids) > 0):
-        if chunk_ids is None:
-            chunk_ids = range(1, math.ceil(len(metadata) / config.n_per_chunk))
+    for chunk_id in chunk_ids:
+        if chunk_id == 0:
+            with open(config.interrater_reliability_img_ids_path.format(config.ds_version, "txt"), "r") as file:
+                chunk_img_ids = file.read().splitlines()
+            create_labelstudio_input_file(metadata[metadata.id.isin(chunk_img_ids)].sort_values(["surface_clean", "smoothness_clean"]),
+                                        False, config.interrater_reliability_img_ids_path.format(config.ds_version, "json_path"))
+        
         else:
-            chunk_ids = [x for x in chunk_ids if x > 0]
+            # get metadata for chunk imgs
+            with open(config.chunk_img_ids_path.format(config.ds_version, chunk_id, "txt"), "r") as file:
+                chunk_img_ids = file.read().splitlines()
 
-        # remove irr_chunk_ids from metadata
-        with open(config.interrater_reliability_img_ids_path.format(config.ds_version, "txt"), "r") as file:
-            img_ids_irr = [line.strip() for line in file.readlines()]
-        metadata = metadata.loc[(~metadata.id.isin(img_ids_irr)),:]
+            filtered_chunk_img_ids = filter_by_model_prediction(metadata[metadata.id.isin(chunk_img_ids)], chunk_id)
+            chunk_metadata = metadata[metadata.id.isin(filtered_chunk_img_ids)]
 
-        # remove ids used in previous chunks
-        # TODO
-
-        for chunk_id in chunk_ids:
-            # create a file for each annotator - and chunk?:
+            md_grouped = (chunk_metadata
+                            .groupby(["surface_clean", "smoothness_clean"]))
+            
+            # give a third of each group to each annotator
             for i in range(0, config.n_annotators):
-
-                # # select fraction of metadata for this annotator
-                # frac = int(len(metadata) / config.n_annotators)
-                # metadata_annotator = metadata.iloc[i*frac:(i+1)*frac,:]
-                
                 # create chunks
                 imgids_ann = []
                 #while len(imgids_ann) < frac:
-                md_grouped = (metadata.groupby(["surface_clean", "smoothness_clean"]))
                 
-                # are there enough imgs left to sample from?
-                # if not: take the rest of images for classes below the n chunk size and append them
-                groups_below_chunksize = md_grouped.size()[md_grouped.size() < config.n_per_chunk]
-                if len(groups_below_chunksize) > 0:
-                    imgids_ann += (md_grouped
-                    .sample(frac=1, random_state=1)
-                    .set_index(["surface_clean", "smoothness_clean"])
-                    .loc[groups_below_chunksize.index]["id"]
+                for label in md_grouped.size().index:
+                    count = md_grouped.size()[label]
+                    chunk_size = math.floor(count / config.n_annotators)
+
+                    imgids_ann += (chunk_metadata[
+                        (chunk_metadata.surface_clean == label[0]) & (chunk_metadata.smoothness_clean == label[1])
+                        ]
+                    .sample(chunk_size, random_state=1)["id"]
                     .tolist()
                     )
-
-                # then append the chunk size for the remaining classes
-                groups_in_chunksize = md_grouped.size()[md_grouped.size() >= config.n_per_chunk]
-
-                imgids_ann += (metadata
-                    .set_index(["surface_clean", "smoothness_clean"])
-                    .loc[groups_in_chunksize.index]
-                    .groupby(["surface_clean", "smoothness_clean"])
-                    .sample(config.n_per_chunk, random_state=1)["id"]
-                    .tolist()
-                )
                 
+                chunk_metadata = chunk_metadata[~chunk_metadata.id.isin(imgids_ann)]
+
                 with open(config.annotator_ids_path.format(config.ds_version, chunk_id, i, "txt"), "w") as file:
                     for item in imgids_ann:
                         file.write("%s\n" % item)
-                create_labelstudio_input_file(metadata[metadata.id.isin(imgids_ann)], False, 
+                # group according to surface and smoothness for labelstudio
+                create_labelstudio_input_file(metadata[metadata.id.isin(imgids_ann)].sort_values(["surface_clean", "smoothness_clean"]), False, 
                                         config.annotator_ids_path.format(config.ds_version, chunk_id, i, "json"))
 
-                # remove used images
-                metadata = metadata.loc[(~metadata.id.isin(imgids_ann)),:]
 
 if __name__=="__main__":
     prepare_manual_annotation(chunk_ids=[1])
+
+

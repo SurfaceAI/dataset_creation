@@ -37,14 +37,17 @@ n_annotators = 3
 n_irr = 10
 
 # n img per cluss for each chunk when annotating
-chunk_ids = [0, 1]
+chunk_ids = [2]
 n_per_chunk = 100
+model_prediction_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/{}/metadata/model_predictions_{}_c{}_predicted.csv"
 labelstudio_absolute_path = "https://freemove.f4.htw-berlin.de/data/local-files/?d={}"
 labelstudio_predictions_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}/sample_predictions.json"
 # img ids that have previously already been labeled and should be excluded in further labeling to avoid redundant work
 labeled_imgids_path = os.path.join(data_folder, "labeled_imgids.txt")
 chunks_folder = os.path.join(data_folder, "{}", "chunks")
 interrater_reliability_img_ids_path = os.path.join(chunks_folder, "interrater_reliability_img_ids.{}")
+chunk_img_ids_path = os.path.join(chunks_folder, "c{}_img_ids.{}")
+chunk_filtered_img_ids_path = os.path.join(chunks_folder, "c{}_filtered_out_img_ids.{}")
 annotator_ids_path = os.path.join(chunks_folder, "c{}_annotator{}_img_ids.{}")
 
 # possible surface / smoothness combinations
