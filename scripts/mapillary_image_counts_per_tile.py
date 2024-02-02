@@ -10,35 +10,23 @@ sys.path.append("./")
 
 # importing
 import config
+import constants as const
 import utils
 
-# ---------------------
-
-# output path
-out_path = config.germany_tiles_path
-bbox = config.bbox_germany
-
-# ---------------------
-
-
-def get_tile_number(tile):
-    return tiles.index(tile)
-
+tiles = []
 
 def counts_per_tile(tile):
-    tile_no = get_tile_number(tile)
+    tile_no = tiles.index(tile)
     if tile_no % 10 == 0:
         print(f"current tile number {tile_no}")
 
-    data = utils.get_tile_data(tile)
+    data = utils.get_tile_images(tile)
     return len(data["features"])
 
-
-if __name__ == "__main__":
+def mapillary_image_counts_per_tile(out_path, bbox, num_threads = 8):
+    global tiles
     start = time.time()
     tiles = list(mercantile.tiles(bbox[0], bbox[1], bbox[2], bbox[3], config.zoom))
-    # Number of parallel threads (adjust as needed)
-    num_threads = 8
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
         # Using executor.map to parallelize the function
@@ -55,6 +43,10 @@ if __name__ == "__main__":
 
     end = time.time()
     print(f"{(end - start)/60} minutes")
+
+
+if __name__ == "__main__":
+    mapillary_image_counts_per_tile(config.germany_tiles_path, const.BBOX_GERMANY)
 
     # 21 minutes for 793 tiles
     # 7 minutes for 793 tiles with 4 threads

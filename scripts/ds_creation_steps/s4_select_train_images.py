@@ -1,0 +1,191 @@
+import pandas as pd
+import sys
+import os 
+import math
+
+# setting path
+sys.path.append("./")
+
+import utils
+import config
+
+# further filter image selection for training dataset
+def select_training_sample():
+        metadata = pd.read_csv(
+            config.train_image_metadata_with_tags_path.format(config.ds_version), dtype={"id": str})
+        # drop potential duplicates
+        metadata.drop_duplicates(subset="id", inplace=True)
+
+        metadata["month"] = pd.to_datetime(metadata["captured_at"], unit="ms").dt.month
+        metadata["hour"] = pd.to_datetime(metadata["captured_at"], unit="ms").dt.hour
+        metadata = utils.clean_surface(metadata)
+        
+        metadata = utils.clean_smoothness(metadata)
+
+        # drop surface specific smoothness
+        cleaned_metadata = pd.DataFrame()
+        for surface in config.surfaces:
+            cleaned_metadata = pd.concat(
+                [
+                    cleaned_metadata,
+                    metadata[
+                        (
+                            (metadata["surface_clean"] == surface)
+                            & (
+                                metadata["smoothness_clean"].isin(
+                                    config.surf_smooth_comb[surface]
+                                )
+                            )
+                        )
+                    ],
+                ]
+            )
+        metadata = cleaned_metadata
+
+        # remove already labeled images
+        with open(config.labeled_imgids_path, "r") as file:
+            already_labled_ids = file.read().splitlines()
+        metadata = metadata[~metadata.id.isin(already_labled_ids)]
+        
+        # filter date (outdated)
+        # metadata = metadata[metadata["captured_at"] >= config.time_filter_unix]
+        # not in winter (bc of snow)
+        # metadata = metadata[metadata["month"].isin(range(3,11))]
+        # not at night (bc of bad light)
+        # metadata = metadata[metadata["hour"].isin(range(8,18))]
+
+        # remove panorama images
+        metadata = metadata[metadata["is_pano"] == "f"]
+        # remove Autobahn images
+        metadata = metadata[~metadata["highway"].isin(["motorway", "motorway_link"])]
+
+        # filtering by max_img_per_sequence and max_img_per_tile reduces df from 13 mio to 50k images
+        # sample x images per class
+        metadata = (
+            metadata.groupby(["sequence_id"])  # restrict number of images per sequence
+            .sample(config.max_img_per_sequence_train, random_state=1, replace=True)
+            .drop_duplicates(subset="id")
+            .groupby(["tile_id", "surface_clean", "smoothness_clean"])  # restrict number of images per tile (per class)
+            .sample(config.max_img_per_tile, random_state=1, replace=True)
+            .drop_duplicates(subset="id")
+
+        )
+
+        # alle klassen,die noch nicht imgs_per_class haben, werden mit weiteren highways aufgefüllt
+        # prefer pedastrian and cycleway
+        metadata_selection = pd.DataFrame()
+        for surface in config.surfaces:
+            for smoothness in config.surf_smooth_comb[surface]:
+                metadata_temp = ((metadata.loc[
+                    (
+                        (metadata["surface_clean"] == surface)
+                        & (metadata["smoothness_clean"] == smoothness)
+                        & (metadata["highway"].isin(["pedestrian", "cycleway"]))),])
+                .groupby(["surface_clean", "smoothness_clean"])
+                .sample(500, random_state=1, replace=True)
+                .drop_duplicates(subset="id")
+                )
+                        
+                n_missing_imgs = config.imgs_per_class - len(metadata_temp)
+                # fill up to imgs_per_class with other highways
+                metadata_fill_temp = (
+                    metadata.loc[
+                        (
+                            (~metadata.id.isin(metadata_temp.id))
+                            & (metadata["surface_clean"] == surface)
+                            & (metadata["smoothness_clean"] == smoothness),
+                        )
+                    ]
+                )
+                n_missing_imgs = n_missing_imgs if n_missing_imgs < len(metadata_fill_temp) else len(metadata_fill_temp)
+
+                metadata_fill_temp = (metadata_fill_temp
+                    .sample(n_missing_imgs, random_state=1)
+                    .drop_duplicates(subset="id")
+                )
+
+                metadata_selection = pd.concat([metadata_selection, metadata_temp, metadata_fill_temp])
+
+        metadata_selection.to_csv(
+            config.train_image_selection_metadata_path.format(config.ds_version),
+            index=False,
+        )
+
+def create_chunks(chunk_ids):
+    # read and shuffle metadata
+    # shuffle images so they are not ordered by surface/smoothness of location
+    chunks_folder = config.chunks_folder.format(config.ds_version)
+    if not os.path.exists(chunks_folder):
+        os.makedirs(chunks_folder)
+
+    metadata = (pd
+                    .read_csv(config.train_image_selection_metadata_path.format(config.ds_version), dtype={"id": str})
+                    .sample(frac=1, random_state=1).reset_index(drop=True)
+                )
+
+    if (chunk_ids is None) or (0 in chunk_ids):
+        # create a file that holds all that image IDs that should be classified by everyone for interrater reliability
+        img_ids_irr = metadata.groupby(["surface_clean", "smoothness_clean"]).sample(
+            config.n_irr, random_state=1)["id"].tolist()
+        with open(config.interrater_reliability_img_ids_path.format(config.ds_version, "txt"), "w") as file:
+            for item in img_ids_irr:
+                file.write("%s\n" % item)
+    
+    if (chunk_ids is None) or (max(chunk_ids) > 0):
+        if chunk_ids is None:
+            chunk_ids = range(1, math.ceil(len(metadata) / config.n_per_chunk))
+        else:
+            chunk_ids = [x for x in chunk_ids if x > 0]
+
+        # remove ids that have previously been labeled
+        with open(config.labeled_imgids_path, "r") as file:
+            already_labled_ids = file.read().splitlines()
+        metadata = metadata[~metadata.id.isin(already_labled_ids)]
+
+        # remove irr_chunk_ids from metadata
+        with open(config.interrater_reliability_img_ids_path.format(config.ds_version, "txt"), "r") as file:
+            img_ids_irr = [line.strip() for line in file.readlines()]
+        metadata = metadata.loc[(~metadata.id.isin(img_ids_irr)),:]
+
+        # remove images from previous chunks
+        if min(chunk_ids) > 1:
+            for i in range(1, min(chunk_ids)):
+                with open(config.chunk_img_ids_path.format(config.ds_version, i, "txt"), "r") as file:
+                    already_labled_ids = file.read().splitlines()
+                metadata = metadata[~metadata.id.isin(already_labled_ids)]
+        
+        for chunk_id in chunk_ids:
+            # create a txt file for each chunk
+            chunk_imgids = []
+            md_grouped = (metadata.groupby(["surface_clean", "smoothness_clean"]))
+                
+            # are there enough imgs left to sample from?
+            # if not: take the rest of images for classes below the n chunk size and append them
+            groups_below_chunksize = md_grouped.size()[md_grouped.size() < (config.n_per_chunk*config.n_annotators)]
+            if len(groups_below_chunksize) > 0:
+                chunk_imgids += (md_grouped
+                .sample(frac=1, random_state=1)
+                .set_index(["surface_clean", "smoothness_clean"])
+                .loc[groups_below_chunksize.index]["id"]
+                .tolist()
+                )
+
+            # then append the chunk size for the remaining classes
+            groups_in_chunksize = md_grouped.size()[md_grouped.size() >= (config.n_per_chunk*config.n_annotators)]
+
+            chunk_imgids += (metadata
+                .set_index(["surface_clean", "smoothness_clean"])
+                .loc[groups_in_chunksize.index]
+                .groupby(["surface_clean", "smoothness_clean"])
+                .sample((config.n_per_chunk*config.n_annotators), random_state=1)["id"]
+                .tolist()
+            )
+
+            with open(config.chunk_img_ids_path.format(config.ds_version, chunk_id, "txt"), "w") as file:
+                for item in chunk_imgids:
+                    file.write("%s\n" % item)
+            
+     
+if __name__ == "__main__":
+    #select_training_sample()
+    create_chunks()

@@ -8,8 +8,12 @@ import time
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import DictCursor
+import pandas as pd
+import geopandas as gpd
+from shapely.geometry import Point
 
 import database_credentials as db
+import constants as const
 
 # set access tokens
 with open(config.token_path, "r") as file:
@@ -17,32 +21,36 @@ with open(config.token_path, "r") as file:
     access_tokens = [line.strip() for line in file.readlines()]
 current_token = 0
 
+
 def tile_center(xtile, ytile, zoom):
     """Return longitude,latitude centroid coordinates of mercantile tile
     Args:
         xtile (int): x tile coordinate
         ytile (int): y tile coordinate
         zoom (int): zoom level
-    
+
     Returns:
         (float, float): A tuple of longitude, latitude.
     """
     upperleft = mercantile.ul(xtile, ytile, zoom)
-    upperright = mercantile.ul(xtile, ytile, zoom)
-    lowerleft =  mercantile.ul(xtile, ytile, zoom)
+    upperright = mercantile.ul(xtile + 1, ytile, zoom)
+    lowerleft = mercantile.ul(xtile, ytile - 1, zoom)
+
+    # not completely exact but good enough for our purposes
     lon = (upperleft.lng + upperright.lng) / 2
     lat = (upperleft.lat + lowerleft.lat) / 2
     return lon, lat
 
 
-def get_tile_data(tile):
-    """Get metadata for all images within a tile from mapillary (based on tiles endpoint)
-    
+def get_tile_images(tile):
+    """Get information about images (img_id, creator_id, captured_at, is_pano, organization_id) contained within given tile (based on tiles endpoint)
+    This does not include coordinates of images!
+
     Args:
         tile(mercantile.Tile): mercantile tile
 
     Returns:
-        dict: Metadata of all images within tile as json (dict).
+        dict: all images within tile as json (dict) including properties: img_id, creator_id, captured_at, is_pano, organization_id.
     """
     global current_token
 
@@ -71,8 +79,15 @@ def get_tile_data(tile):
     )
 
 
-def get_tile_metadata(tile):
-    """
+def get_images_metadata(tile):
+    """Get metadata for all images within a tile from mapillary (based on https://graph.mapillary.com/:image_id endpoint)
+    This includes coordinates of images!
+
+    Args:
+        tile(mercantile.Tile): mercantile tile
+
+    Returns:
+        tuple(list, list(list))): Metadata of all images within tile, including coordinates, as tuple: first element is list with column names ("header"). Second element is a list of list, each list representing one image.
     """
     global current_token
     header = [
@@ -118,6 +133,12 @@ def get_tile_metadata(tile):
 
 
 def download_image(image_id, image_folder):
+    """Download image file based on image_id and save to given image_folder
+
+    Args:
+        image_id (str): ID of image to download
+        image_folder (str): path of folder to save image to
+    """
     response = requests.get(
         config.mapillary_graph_url.format(image_id),
         params={
@@ -146,14 +167,22 @@ def download_image(image_id, image_folder):
 
 
 def query_and_write_img_metadata(tiles, out_path):
+    """Write metadata of all images in tiles to csv
+
+    Args:
+        tiles (df): dataframe with tiles and columns x,y,z,lat,lon
+        out_path (str): path to save csv with image metadata of tile to
+    """
     # write metadata of all potential images to csv
     with open(out_path, "w", newline="") as csvfile:
         csvwriter = csv.writer(csvfile)
         for i in range(0, len(tiles)):
             if i % 10 == 0:
                 print(f"{i} tiles of {len(tiles)}")
-            tile = tiles.iloc[i,]
-            header, output = get_tile_metadata(tile)
+            tile = tiles.iloc[
+                i,
+            ]
+            header, output = get_images_metadata(tile)
             if i == 0:
                 csvwriter.writerow(header)
             for row in output:
@@ -161,16 +190,23 @@ def query_and_write_img_metadata(tiles, out_path):
 
 
 def intersect_mapillary_osm(tile_id, table_name):
-    start_query = time.time()
+    """Function to interact with SQL database:
+    for a given tile_id, intersect all images within the tile with OSM streets and create columns "surface", "smoothness" and "highway" for the given table_name.
+    These columns are filled with values accordring to the OSM intersection.
+
+    Args:
+        tile_id (str): tile ID to intersect with OSM
+        table_name (str): name of the table to create new columns for
+    """
+    # start_query = time.time()
 
     tilex, tiley, zoom = str.split(tile_id, "_")
     bbox = mercantile.bounds(int(tilex), int(tiley), int(zoom))
     with open(config.sql_script_intersect_osm_mapillary_path, "r") as file:
         query = file.read()
-        query = str.replace(query, "{table_name}", table_name)
 
     query = query.format(
-        bbox[0], bbox[1], bbox[2], bbox[3], bbox[0], bbox[1], bbox[2], bbox[3]
+        bbox0 = bbox[0], bbox1 = bbox[1], bbox2 = bbox[2], bbox3 = bbox[3], table_name=table_name
     )
 
     # Connect to your PostgreSQL database
@@ -183,11 +219,44 @@ def intersect_mapillary_osm(tile_id, table_name):
         cursor.execute(sql.SQL(query))
         conn.commit()
 
-    end_query = time.time()
+    # end_query = time.time()
     # print(f"{tile_id} took {(round(end_query-start_query))} secs for intersection")
 
 
-def save_sql_table_to_csv(table_name, output_path, where_clause="where highway != ''"):
+def save_sql_table_to_csv(
+    table_name, output_path, columns=None, where_clause="where highway != ''"
+):
+    """Download table from SQL database and save as csv
+
+    Args:
+        table_name (str): name of table to download
+        output_path (str): path of csv to save table to
+        where_clause (str, optional):Where clause to filter table before storing to csv. Defaults to "where highway != ''".
+    """
+
+    # default columns
+    if columns is None:
+        columns = [
+            "id",
+            "tile_id",
+            "sequence_id",
+            "creator_id",
+            "captured_at",
+            "is_pano",
+            "highway",
+            "surface",
+            "smoothness",
+            "cycleway",
+            "cycleway_surface",
+            "cycleway_smoothness",
+            "cycleway_right",
+            "cycleway_right_surface",
+            "cycleway_right_smoothness",
+            "cycleway_left",
+            "cycleway_left_surface",
+            "cycleway_left_smoothness",
+        ]
+
     with open(config.sql_script_save_db_to_csv_path, "r") as file:
         query = file.read()
     absolute_path = os.path.join(os.getcwd(), output_path)
@@ -199,14 +268,59 @@ def save_sql_table_to_csv(table_name, output_path, where_clause="where highway !
         host=db.host,
     )
     with conn.cursor(cursor_factory=DictCursor) as cursor:
-        cursor.execute(sql.SQL(query.format(table_name, where_clause, absolute_path)))
+        cursor.execute(
+            sql.SQL(
+                query.format(
+                    table_name=table_name,
+                    columns=','.join(columns),
+                    where_clause=where_clause,
+                    absolute_path=absolute_path,
+                )
+            )
+        )
         conn.commit()
     conn.close()
+
+    # clean table bc trailing whitespace is stored during export # TODO: better way while exporting from SQL?
+    df = pd.read_csv(absolute_path)
+    for column in columns:
+        if (df[column].dtype == "str") | (df[column].dtype == "object"):
+            df[column] = df[column].str.strip()
+    df.to_csv(absolute_path, index=False)
     print("csv exported from db")
 
 
+def clean_smoothness(metadata):
+    """Clean smoothness column of metadata dataframe according to defined OSM smoothness values
+
+    Args:
+        metadata (df): dataframe with image metadata, including column "smoothness"
+
+    Returns:
+        df: dataframe with cleaned smoothness column "smoothness_clean"
+    """
+    metadata["smoothness"] = metadata.smoothness.str.strip()
+    metadata["smoothness_clean"] = metadata["smoothness"].replace(
+        [
+            "horrible",
+            "very_horrible",
+            "impassable",
+        ],
+        const.VERY_BAD,
+    )
+
+    metadata["smoothness_clean"] = metadata["smoothness_clean"].replace(["perfect", "very_good"], const.EXCELLENT)
+    return metadata
 
 def clean_surface(metadata):
+    """Clean surface column of metadata dataframe according to defined OSM surface values
+
+    Args:
+        metadata (df): dataframe with image metadata, including column "surface"
+
+    Returns:
+        df: dataframe with cleaned surface column "surface_clean"
+    """
     metadata["surface"] = metadata.surface.str.strip()
     metadata["surface_clean"] = metadata["surface"].replace(
         [
@@ -219,7 +333,7 @@ def clean_surface(metadata):
             "earth",
             "sand",
         ],
-        "unpaved",
+        const.UNPAVED,
     )
     metadata["surface_clean"] = metadata["surface_clean"].replace(
         ["cobblestone", "unhewn_cobblestone"], "sett"
@@ -228,3 +342,28 @@ def clean_surface(metadata):
         "concrete:plates", "concrete"
     )
     return metadata
+
+
+def write_tiles_within_boundary(csv_path, boundary):
+            
+    bbox = boundary.total_bounds
+
+    tiles = list()
+    tiles += list(
+        mercantile.tiles(bbox[0], bbox[1], bbox[2], bbox[3], config.zoom)
+    )
+
+    with open(
+        csv_path, "w", newline=""
+    ) as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(["x", "y", "z", "lat", "lon"])
+        for i in range(0, len(tiles)):
+            tile = tiles[i]
+            lon, lat = tile_center(tile.x, tile.y, config.zoom)
+            point = gpd.GeoDataFrame(
+                geometry=[Point(lon, lat)], crs="EPSG:4326"
+            )
+            # if tile center within boundary of city, write to csv
+            if boundary.geometry.contains(point)[0]:
+                csvwriter.writerow([tile.x, tile.y, config.zoom, lat, lon])

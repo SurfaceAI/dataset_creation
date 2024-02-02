@@ -1,44 +1,11 @@
-germany_tiles_path = "data/germany_image_counts.csv"
-germany_raster_template = "data/germany_tile_raster_template.tif"
-germany_raster_image_counts = "data/germany_mapillary_counts_raster.tif"
-germany_osmtag_counts = "data/germany_osmtag_counts.tif"
-autobahn_path = "data/autobahn.shp"
-filtered_autobahn_path = "data/{}/autobahn_filtered.geojson"
-# berlin_tiles_path = 'data/berlin_image_counts.csv'
-# berlin_raster_template = 'data/berlin_tile_raster_template.tif'
-# berlin_raster_image_counts = 'data/berlin_tile_raster.tif'
+import os
+import constants as const
 
-# test_city_tiles_path = 'data/test_city_tiles.csv'
-# test_tiles_metadata_path = 'data/test_tiles_metadata.csv'
-# test_image_selection_metadata_path = 'data/testimage_selection_metadata.csv'
+# location of data folder
+data_folder = "data"
 
-test_city_tiles_path = "data/{}/city_tiles.csv"
-test_tiles_metadata_path = "data/{}/all_images_metadata.csv"
-test_image_selection_metadata_path = "data/{}/image_selection_metadata.csv"
-test_image_folder = "data/{}/images"
-test_small_raster_template = "data/{}/small_raster_template.tif"
-test_small_raster_counts = "data/{}/small_raster_counts.tif"
-test_image_metadata_with_tags_path = "data/{}/img_metadata_with_tags.csv"
-
-boundary = "data/{}/boundary.geojson"
-
-train_tiles_metadata_path = "data/train_tiles_metadata.csv"
-train_tiles_selection_path = "data/train_tiles_selection.csv"
-train_image_selection_metadata_path = "data/{}_train_image_selection_metadata.csv"
-train_image_sample_metadata_path = "data/{}_train_image_sample_metadata.csv"
-train_image_sample_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}/00_sample"
-train_image_folder = "data/{}_train_images"
-train_image_metadata_with_tags_path = "data/{}_img_metadata_with_tags.csv"
-
-
-sql_script_intersect_osm_mapillary_path = "scripts/intersect_osm_mapillary.sql"
-sql_script_save_db_to_csv_path = "scripts/save_db_to_csv.sql"
-sql_script_mapillary_meta_to_database_path = "scripts/mapillary_meta_to_database.sql"
-sql_script_osm_tags_to_raster_counts_path = "scripts/osm_tag_counts_as_raster.sql"
-
+## mapillary settings
 token_path = "mapillary_token.txt"
-
-## global mapillary settings
 mapillary_tile_url = "https://tiles.mapillary.com/maps/vtp/{}/2/{}/{}/{}"
 mapillary_graph_url = "https://graph.mapillary.com/{}"
 tile_coverage = "mly1_public"
@@ -46,35 +13,100 @@ tile_layer = "image"  # "overview"
 zoom = 14
 image_size = "thumb_1024_url"
 
-bbox_germany = [
-    5.866240000000001,
-    47.27011000000001,
-    15.041880000000001,
-    54.98310499999999,
-]
-
-# test cities
-# bbox_luenburg = [10.324,53.191,10.542,53.295]
-# bbox_cologne = [6.768,50.865,7.161,51.084]
-# bbox_bamberg = [10.828,49.842,10.96,49.951]
-# bbox_heilbronn = [9.04,49.094,9.303,49.21]
-# bbox_dresden = [13.57,51.002,13.97,51.18]
-
+# train data paramenters
 # timestamp filter 1.6.2021
 time_filter_unix = 1609891200000
 max_img_per_sequence_test = 10
 max_img_per_cell = 5
 
+# test data paramenters
 # training images
-training_data_version = "v4"
-max_img_per_sequence_training = 5
+ds_version = "v5"
+max_img_per_sequence_train = 10
+max_img_per_tile = 5
+tile_sample_size = 300
 min_images = 500
 min_tags = 50
 
-imgs_per_class = 1200
-
+imgs_per_class = 2000
 
 ##labelstudio
 # labelstudio_absolute_path = "http://localhost:8080/data/local-files/?d={}"
+n_annotators = 3
+# n img per class for for interrater reliability
+n_irr = 10
+
+# n img per cluss for each chunk when annotating
+chunk_ids = [2]
+n_per_chunk = 100
+model_prediction_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/{}/metadata/model_predictions_{}_c{}_predicted.csv"
 labelstudio_absolute_path = "https://freemove.f4.htw-berlin.de/data/local-files/?d={}"
 labelstudio_predictions_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}/sample_predictions.json"
+# img ids that have previously already been labeled and should be excluded in further labeling to avoid redundant work
+labeled_imgids_path = os.path.join(data_folder, "labeled_imgids.txt")
+chunks_folder = os.path.join(data_folder, "{}", "chunks")
+interrater_reliability_img_ids_path = os.path.join(chunks_folder, "interrater_reliability_img_ids.{}")
+chunk_img_ids_path = os.path.join(chunks_folder, "c{}_img_ids.{}")
+chunk_filtered_img_ids_path = os.path.join(chunks_folder, "c{}_filtered_out_img_ids.{}")
+annotator_ids_path = os.path.join(chunks_folder, "c{}_annotator{}_img_ids.{}")
+
+# possible surface / smoothness combinations
+surfaces = [
+    const.ASPHALT,
+    const.CONCRETE,
+    const.PAVING_STONES,
+    const.SETT,
+    const.UNPAVED,
+]
+
+surf_smooth_comb = {
+    const.ASPHALT: [const.EXCELLENT, const.GOOD, const.INTERMEDIATE, const.BAD],
+    const.CONCRETE: [const.EXCELLENT, const.GOOD, const.INTERMEDIATE, const.BAD],
+    const.PAVING_STONES: [const.EXCELLENT, const.GOOD, const.INTERMEDIATE, const.BAD],
+    const.SETT: [const.GOOD, const.INTERMEDIATE, const.BAD],
+    const.UNPAVED: [const.INTERMEDIATE, const.BAD, const.VERY_BAD],
+}
+
+
+# PATHS
+
+# file paths for tif files (mapillary image counts and OSM tag counts as rasters)
+tag_counts_path = os.path.join(data_folder, "tag_counts")
+surf_smooth_tag_counts_path = os.path.join(tag_counts_path, "{}_{}_counts_germany.tif")
+germany_tiles_path = os.path.join(tag_counts_path, "germany_image_counts.csv")
+germany_raster_template_path = os.path.join(tag_counts_path, "germany_tile_raster_template.tif")
+
+autobahn_path = os.path.join(data_folder, "autobahn.shp")
+filtered_autobahn_path = os.path.join(data_folder, "{}", "autobahn_filtered.geojson")
+# berlin_tiles_path = 'data/berlin_image_counts.csv'
+# berlin_raster_template = 'data/berlin_tile_raster_template.tif'
+# berlin_raster_image_counts = 'data/berlin_tile_raster.tif'
+
+# test city paths (bracket will be filled with city name)
+test_data_folder = os.path.join(data_folder, "test_data")
+test_city_tiles_path = os.path.join(test_data_folder, "{}", "city_tiles.csv")
+test_tiles_metadata_path = os.path.join(test_data_folder, "{}", "all_images_metadata.csv")
+test_image_selection_metadata_path = os.path.join(test_data_folder, "{}", "image_selection_metadata.csv")
+test_image_folder = os.path.join(test_data_folder, "{}", "images")
+test_small_raster_template = os.path.join(test_data_folder, "{}", "small_raster_template.tif")
+test_small_raster_counts = os.path.join(test_data_folder, "{}", "small_raster_counts.tif")
+test_image_metadata_with_tags_path = os.path.join(test_data_folder, "{}","img_metadata_with_tags.csv")
+boundary = os.path.join(test_data_folder, "{}", "boundary.geojson")
+
+# train data paths (bracket will be filled with training data version)
+train_tiles_metadata_path = os.path.join(data_folder,"{}", "train_tiles_metadata.csv")
+train_tiles_selection_path = os.path.join(data_folder,"{}", "train_tiles_selection.csv")
+train_image_selection_metadata_path = os.path.join(data_folder,"{}", "train_image_selection_metadata.csv")
+#train_image_sample_metadata_path = os.path.join(data_folder,"{}_train_image_sample_metadata.csv")
+#train_image_sample_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}/00_sample"
+train_image_folder = os.path.join(data_folder,"{}", "train_images")
+chunk_image_folder = os.path.join(train_image_folder, "c{}")
+train_image_metadata_with_tags_path = os.path.join(data_folder,"{}", "img_metadata_with_tags.csv")
+
+# sql scripts
+sql_scripts_path = os.path.join("scripts", "sql")
+sql_script_intersect_osm_mapillary_path = os.path.join(sql_scripts_path, "intersect_osm_mapillary.sql")
+sql_script_save_db_to_csv_path = os.path.join(sql_scripts_path, "save_db_to_csv.sql")
+sql_script_mapillary_meta_to_database_path = os.path.join(sql_scripts_path, "mapillary_meta_to_database.sql")
+sql_script_osm_tags_to_raster_counts_path = os.path.join(sql_scripts_path, "osm_tag_counts_as_raster.sql")
+

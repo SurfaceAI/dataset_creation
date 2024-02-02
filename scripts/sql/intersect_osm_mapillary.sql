@@ -16,7 +16,7 @@ drop table if exists ways_selection;
 CREATE TABLE node_selection AS
 SELECT * FROM nodes WHERE ST_Within(
         geom,
-         ST_MakeEnvelope({}, {}, {}, {}, 4326)
+         ST_MakeEnvelope({bbox0}, {bbox1}, {bbox2}, {bbox3}, 4326)
     ); 
    
 CREATE INDEX node_selection_idx ON node_selection USING GIST(geom);
@@ -74,12 +74,11 @@ drop table if exists mapillary_selection;
 
 CREATE TABLE mapillary_selection AS
 SELECT * FROM {table_name}
---where captured_at > 1672527600000 -- filter images only from this year (2023) - still > 1 Mio
-
 where  ST_Within(
         {table_name}.geom,
-         ST_MakeEnvelope({}, {}, {}, {}, 4326)
+         ST_MakeEnvelope({bbox0}, {bbox1}, {bbox3}, {bbox3}, 4326)
     ); 
+--where captured_at > 1672527600000 -- filter images only from this year (2023) - still > 1 Mio
 
 drop table if exists mapillary_selection_labeled;
 

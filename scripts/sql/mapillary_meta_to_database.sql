@@ -14,7 +14,7 @@ CREATE TABLE {table_name} (
 );
 
 -- TODO: upload all mapillary metadata into  OSM ----
-COPY {table_name} FROM '{}' DELIMITER ',' CSV HEADER;
+COPY {table_name} FROM '{absolute_path}' DELIMITER ',' CSV HEADER;
 
 ALTER TABLE {table_name} ADD COLUMN surface char(50),
 ADD COLUMN smoothness char(50),
@@ -33,3 +33,7 @@ ADD COLUMN geom geometry(Point, 4326);
 
 -- Update the geometry column using lat and lon
 UPDATE {table_name} SET geom = ST_SetSRID(ST_MakePoint(lon, lat), 4326);
+
+-- create index for faster intersections
+CREATE INDEX {table_name}_idx ON {table_name} USING GIST(geom);
+CREATE INDEX {table_name}_id_idx ON {table_name}(id);

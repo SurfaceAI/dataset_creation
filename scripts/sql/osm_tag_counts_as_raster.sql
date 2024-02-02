@@ -31,6 +31,8 @@ ways.tags -> 'smoothness' as smoothness,
 left join way_nodes on nodes.id=way_nodes.node_id where way_nodes.way_id=ways.id limit 1)
 FROM ways
 where ways.tags -> 'highway' <> '' and 
+ways.tags -> 'highway' <> 'motorway' and
+ways.tags -> 'highway' <> 'motorway_link' and
 ways.tags -> 'surface' <> '' and
 ways.tags -> 'smoothness' <> '';
 -- takes 9 minutes for all of Germany (1 Mio tags)
@@ -59,8 +61,7 @@ UPDATE {raster_name}
 SET rast = (
     SELECT ST_Union(ST_AsRaster(node_tags.geom, rast::raster),'COUNT')
     FROM node_tags
-    WHERE node_tags.surface = '{surface}'
-
+    WHERE node_tags.surface = '{surface}' AND  node_tags.smoothness = '{smoothness}'
     --WHERE ST_Intersects(st_transform(mapillaryimg_small.wkb_geometry , 3857), rast::geometry)
 );
 
