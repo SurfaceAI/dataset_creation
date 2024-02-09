@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import shutil
 
+# This script combines all annotated images from different versions and creates folders for the images
+
 output_version = "V6"
 input_versions = ["V4", "V5_c0", "V5_c1"]
 root_path = os.path.join("/", "Users", "alexandra", "Nextcloud-HTW", "SHARED", "SurfaceAI", "data", "mapillary_images", "training")
@@ -77,7 +79,8 @@ def create_annotated_image_folders(root_path, output_version, df):
     ### not recognizable images into folders
     for _, row in df[df.nostreet.notna()].iterrows():
         input_img_folder = os.path.join(root_path, row["input_version"], "unsorted_images")
-        if row["nostreet"] == "(mainly) no street visible":
+        # in V4, nostreet classification were not yet aligned
+        if ((row["nostreet"] == "(mainly) no street visible") & (row["input_version"] != "V4")): 
             surface_folder = os.path.join(output_folder, "no_street")
             os.makedirs(surface_folder, exist_ok=True)
         if row["nostreet"] == "surface / smoothness not recognizable":

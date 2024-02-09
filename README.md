@@ -1,56 +1,93 @@
 # Dataset creation
 
-Code to create our test and training data and other relevant statistics.
+This repository contains the code to create our test and training data for the training and evaluation of classifiers of road surface and smoothness (quality).
 
-*> a file `mapillary_token.txt` needs to be created that holds the mapillary access token for the API and is placed in the root folder of this repo.*
+## Prerequisites
+
+### Mappillary Token
+
+- a file `mapillary_token.txt` needs to be created that holds the Mapillary access token for the API and is placed in the root folder of this repo.
+As Mapillary has a rate limit, there are two tokens expected in the `mapillary_token.txt` which are rotated when the limit is reached.
+
+
+### OSM database
+
+- a PostGIS database that holds all streets of OSM for Germany is expected. Therefore, `osmosis` is used (requires prior installation of postgresql, postgis, osmosis):
+```bash
+    createdb osmGermany
+    psql  -d osmGermany -c  'CREATE EXTENSION postgis;'
+    psql  -d osmGermany -c  'CREATE EXTENSION hstore;'
+
+    # Download the osmosis setup script: https://github.com/openstreetmap/osmosis/releases/tag/0.48.3
+    psql -d osmGermany -f osmosis-0.48.3/script/pgsnapshot_schema_0.6.sql
+
+    osmosis --read-pbf germany-latest.osm.pbf --tf accept-ways 'highway=*' --used-node --tf reject-relations --log-progress --write-pgsql database=osmGermany
+```
+
+a `database_credential.py` file is expected in the root folder in the format of:
+
+    database = "osmGermany"
+    user = "USER_NAME"
+    host = "HOST"
 
 *For our run, metadata for Mapillary and OSM both taken from 20th November 2023.*
 
-## Scripts
-
-You can find all scripts in the folder `scripts`. 
-
-### Pre-study: find out mapillary image and tag counts per (mercantile) tile
-
-[`mapillary_image_counts_per_tile.py`](/scripts/mapillary_image_counts_per_tile.py) is a script that queries the mapillary API and creates a csv where each row corresponds to one tile (x,y,z) with center lat / lon and image count information.
-
-As mapillary has a rate limit, there are two tokens expected in the `mapillary_token.txt` which are rotated when the limit is reached.
-
-[`create_raster_from_tiles.py`](/scripts/create_raster_from_tiles.py) is a script that creates a raster file (.tif) for the previously created csv file and each raster cell contains the image count.
-
-[`osm_tag_counts_as_raster.py`](/scripts/osm_tag_counts_as_raster.py) is a python wrapper script for mostly SQL code that creates seperate rasters with counts of `asphalt`, `sett`, `paving_stones`, `unpaved`. It expects a database with an `.osm.pbf` file inserted. The database credentials are expected to be in a file `database_credentials.py` (`database`, `user`, `host`).
 
 ## Dataset creation
 
-This is the (most relevant) [script](/scripts/train_test_data.py) for creation of train and test datasets.
+[This](/scripts/train_test_data.py) is the entry point for creation of train and test datasets.
+There, all 7 steps are sequentially executed. Their respective scripts can be found in this [folder](/scripts/ds_creation_steps/).
 
-The procedure is as follows:
+These steps are the following:
 
-### Step 1: create test data
+### Create test data
+- **[Step 0](/scripts/ds_creation_steps/s0_create_test_data.py): create test data**
 
-
-- Selection of five cities as test data, which will be entirely excluded from the training data set. These cities are all in Germany but differ in their region (north, west, east, south-east, south-west) and in their size. We used cities with good mapillary image coverage.
-    - München
+- Selection of five cities as test data, which will be entirely excluded from the training data set. These cities are all in Germany but differ in their region (north, west, east, south-east, south-west) and in their size. We used cities with good Mapillary image coverage.
+    - München (Munich)
     - Heidelberg
-    - Köln
-    - Lüneburg
+    - Köln (Cologne)
+    - Lüneburg (Lunenburg)
     - Dresden
 
 For each city, we aim to obtain a diverse dataset. We thus restrict 
-- the number of images per mapillary sequence to 10 images
+- the number of images per Mapillary sequence to 10 images
 - the number of images per 100mx100m grid cell to 5 images.
 
 We further remove images from the Autobahn, as they take up a larger share of images, however, we are interested in classifying urban regions. (Autobahn has typically good/excellent asphalt).
 
 We then sample 1000 images per city.
 
-### Step 2: create training data
+### Create training data
+For the training data, our aim is to intersect Mapillary images with OSM surface and smoothness tags and create a labeled dataset where each class (i.e, surface/smoothness combination) has 1000 images.
 
-For the training data, our aim is to intersect mapillary images with OSM surface and smoothness tags and create a labeled dataset where each class (i.e, surface/smoothness combination) has 1000 images. The process of creating training data is still evolving. In the following section, you can read the filters and considerations applied in each version.
+- **[Step 1](/scripts/ds_creation_steps/s2_get_train_tiles_metadata.py): select train tiles**
+  - exclude all tiles that are part of test data tiles
+  - sample a subset from remaining tiles, to keep computational times in a reasonable limit (the sampling procedure evolved over different versions - see below)
 
+- **[Step 2](/scripts/ds_creation_steps/s2_get_train_tiles_metadata.py): get train tiles metadata from mapillary**
+  - query metadata (*id, sequence_id, captured_at, compass_angle, is_pano, creator_id, lon, lat*) for all Mapillary images within selected tiles
+  - write metadata to csv file, but more importantly to the same database where the OSM data is stored
+
+- **[Step 3](/scripts/ds_creation_steps/s3_intersect_mapillary_osm.py): intersect Mapillary with OSM**
+  - intersects OSM streets with tags surface and smoothness with Mapillary image geolocations such that each image obtains a tag surface and smoothness (if a respective tag is provided in OSM)
+  - exact intersection rules (e.g., max. distance between street and point) evolved over different versions - see below 
+
+- **[Step 4](/scripts/ds_creation_steps/s4_select_train_images.py): select train images**
+  - from all images, we now only consider images that obtained resepctive OSM tags
+  - from remaining images, images are selected to certain criteria (again, they evolved over different versions - see below )
+
+- **[Step 5](/scripts/ds_creation_steps/s5_download_train_images.py): download train images**
+  - download selected images from Mapillary 
+
+- **[Step 6](/scripts/ds_creation_steps/s6_prepare_manual_annotation.py): prepare manual annotation**
+  - for manual annotation in Labelstudio, required files are prepared and sorted according to the number of annotators and batch sizes (data is annotated iteratively)
+
+
+### Dataset versions
+
+The process of creating training data was evolving. In the following section, we documented the evolution up to the currently used version and considerations applied in each version.
 Changes are marked in **bold**.
-
-#### Dataset versions
 
 **V0**: 
 
@@ -66,7 +103,7 @@ First test with Berlin data. See [script](https://github.com/SurfaceAI/internal_
 
 - **sample from entire Germany**
 - **sampling of 1000 random tiles with > 500 img per tile and  50 tagged roads**
-- **buffer of 5 meters around each street which are intersected with mapillary image coordinates**
+- **buffer of 5 meters around each street which are intersected with Mapillary image coordinates**
 - ***no* cut off at intersections (start and end of roads)**
 - **only images after June 2021**
 - **max 10 images per sequence**
