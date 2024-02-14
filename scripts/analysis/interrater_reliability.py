@@ -1,7 +1,11 @@
 import os
 
+import numpy as np
 import pandas as pd
 import json
+
+from sklearn.metrics import cohen_kappa_score
+import krippendorff as kd
 
 path = os.path.join("/", "Users", "alexandra", "Nextcloud-HTW", "SHARED", "SurfaceAI", "data", "mapillary_images", "training", "V4", "metadata", "interrater_reliability")
 files = [
@@ -47,28 +51,71 @@ for file in files:
 
 
     df.loc[df["smoothness"] == "very bad", "smoothness"] = "very_bad"
-    df.loc[(df.res2.isin(nostreet_values) )or (df.res3.isin(nostreet_values) ), "nostreet"] = "nostreet"
-    df.loc[(df.res2.isin([unsure_revise_value]) )or (df.res3.isin([unsure_revise_value])), "nostreet"] = "revise"
+    df.loc[(df.res2.isin(nostreet_values) )| (df.res3.isin(nostreet_values) ), "nostreet"] = "nostreet"
+    df.loc[(df.res2.isin == unsure_revise_value) | (df.res3 == unsure_revise_value), "nostreet"] = "revise"
+    df.drop(columns=["res2", "res3"], inplace=True)
     df.loc[df.nostreet == 'nostreet', "surface"] = "nostreet"
     df.loc[df.nostreet == 'nostreet', "smoothness"] = "nostreet"
 
 
-# compare predictions
+# compare predictions(with nostreet)
 image_id_counts = df.groupby(["image_id"]).size()
 image_ids = image_id_counts[image_id_counts == 3].index
 grouped_surface = df[df.image_id.isin(image_ids) ].groupby(["image_id", "surface"]).size()
 
-# same surface rating
+# same surface rating 
 round(100* len(grouped_surface[grouped_surface == 3]) / len(grouped_surface), 2)
-# 70.62%
+# 64%
 # TODO: Cohens kappa for interrater reliability
-# df[df.image_id.isin(image_ids) ].to_csv("test.csv")
-
-# where is it different?
-#grouped_surface[grouped_surface != 3]
-
 
 # same smoothness rating
 grouped_smoothness = df[df.image_id.isin(image_ids) ].groupby(["image_id", "smoothness"]).size()
 round(100* len(grouped_smoothness[grouped_smoothness == 3]) / len(grouped_smoothness), 2)
-# 32.13%
+# 30%
+
+
+# compare predictions (without nostreet)
+image_id_counts = df[df.surface != "nostreet"].groupby(["image_id"]).size()
+image_ids = image_id_counts[image_id_counts == 3].index
+grouped_surface = df[df.image_id.isin(image_ids) ].groupby(["image_id", "surface"]).size()
+
+# same surface rating (with nostreet)
+round(100* len(grouped_surface[grouped_surface == 3]) / len(grouped_surface), 2)
+# 70%
+
+# where is it different?
+#grouped_surface[grouped_surface != 3]
+
+# same smoothness rating
+grouped_smoothness = df[df.image_id.isin(image_ids) ].groupby(["image_id", "smoothness"]).size()
+round(100* len(grouped_smoothness[grouped_smoothness == 3]) / len(grouped_smoothness), 2)
+# 31%
+
+
+# Compute Cohen's Kappa
+image_id_counts = df[df.surface != "nostreet"].groupby(["image_id"]).size()
+image_ids = image_id_counts[image_id_counts == 3].index
+
+for i,j in [(1,3), (1,4), (3,4)]:
+            rater1 = df[(df.image_id.isin(image_ids)) & (df.annotator == i)].sort_values(by=["image_id"])
+            rater2 = df[(df.image_id.isin(image_ids) )& (df.annotator == j)].sort_values(by=["image_id"])
+            kappa = cohen_kappa_score(rater1.surface.tolist(), rater2.surface.tolist())
+            print(f"Kappa for surface and annotator {i} and {j}: {round(kappa, 2)}")
+            kappa = cohen_kappa_score(rater1.smoothness.tolist(), rater2.smoothness.tolist())
+            print(f"Kappa for smoothness and annotator {i} and {j}: {round(kappa, 2)}")
+
+
+rater1 = df[(df.image_id.isin(image_ids)) & (df.annotator == 1)].sort_values(by=["image_id"])
+rater2 = df[(df.image_id.isin(image_ids) )& (df.annotator == 3)].sort_values(by=["image_id"])
+rater3 = df[(df.image_id.isin(image_ids) )& (df.annotator == 4)].sort_values(by=["image_id"])
+krippendorfs_alpha_surf = kd.alpha(np.array([
+                rater1.surface.tolist(), 
+                rater2.surface.tolist(),
+                rater3.surface.tolist()]), level_of_measurement='nominal')
+krippendorfs_alpha_smooth = kd.alpha(np.array([
+                rater1.smoothness.tolist(), 
+                rater2.smoothness.tolist(),
+                rater3.smoothness.tolist()]), level_of_measurement='nominal')
+
+print(f"Krippendorfs alpha for surface: {round(krippendorfs_alpha_surf, 2)}")
+print(f"Krippendorfs alpha for surface: {round(krippendorfs_alpha_smooth, 2)}")
