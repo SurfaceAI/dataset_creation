@@ -188,7 +188,13 @@ Thus, there are *subsets* of dataset **V5** named according to their chunk:
 
 - c0 is a set of 180 images, which have been labeled by all three annotators to compute interrater reliability
 - c1 is a set of 3x889=2667 images. (Initially, a set of 300 images per class was sampled from V5. Then, combined predictor (OSM label+model prediction based on V4)) was used and only images where both predictors agreed where included for labeling in c1, resulting in about half (2667 from initially 5400) of the images.
+- c2 are all remaining images of asphalt of class *intermediate* and *bad* - according to OSM labels -  which are 2721 images. Again, using the current state of the classification model in combination with OSM tag, 1923 images remain where both predictors agree. These are then manually labeled.
 
 **V6**
 
-A combination of labeled images from V4, V5_c0 and V5_c1.
+A combination of labeled images from **V4**, *V5_c0** and **V5_c1**.
+
+
+**V7**
+
+A combination of labeled images from V4, V5_c0, V5_c1, **V5_c2**.

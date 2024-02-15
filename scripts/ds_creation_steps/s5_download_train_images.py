@@ -28,7 +28,7 @@ def delete_broken_images(folder_path, threshold_size_kb=1):
                 os.remove(file_path)
 
 
-def download_training_images(chunk_ids=None):
+def download_training_images(chunk_ids=None, n_per_chunk=100):
         folder = config.train_image_folder.format(config.ds_version)
         if not os.path.exists(folder):
             os.makedirs(folder)
@@ -38,7 +38,7 @@ def download_training_images(chunk_ids=None):
             metadata = pd.read_csv(
                 config.train_image_selection_metadata_path.format(config.ds_version)
             )
-            chunk_ids = range(1, math.ceil(len(metadata) / config.n_per_chunk))
+            chunk_ids = range(1, math.ceil(len(metadata) / n_per_chunk))
 
         img_ids_to_download = []
         for chunk_id in chunk_ids:
@@ -46,9 +46,8 @@ def download_training_images(chunk_ids=None):
                 with open(config.interrater_reliability_img_ids_path.format(config.ds_version, "txt"), "r") as file:
                     img_ids_to_download += [line.strip() for line in file.readlines()]
             else:
-                for annotator_id in range(0,config.n_annotators):
-                    with open(config.annotator_ids_path.format(config.ds_version, chunk_id, annotator_id, "txt"), "r") as file:
-                        img_ids_to_download += [line.strip() for line in file.readlines()]
+                with open(config.chunk_img_ids_path.format(config.ds_version, chunk_id, "txt"), "r") as file:
+                    img_ids_to_download += [line.strip() for line in file.readlines()]
 
             folder = config.chunk_image_folder.format(config.ds_version, chunk_id)
             if not os.path.exists(folder):
@@ -62,32 +61,10 @@ def download_training_images(chunk_ids=None):
             # remove broken images 
             delete_broken_images(folder)
 
-        # for surface in config.surfaces:
-        #     folder = os.path.join(
-        #         config.train_image_folder.format(config.ds_version), surface
-        #     )
-        #     if not os.path.exists(folder):
-        #         os.makedirs(folder)
-
-        #     for smoothness in config.surf_smooth_comb[surface]:
-                # folder = os.path.join(
-                #     config.train_image_folder.format(config.ds_version),
-                #     surface,
-                #     smoothness,
-                # )
-                # if not os.path.exists(folder):
-                #     os.makedirs(folder)
-
-                # image_ids = list(
-                #     metadata[
-                #         (metadata["surface_clean"] == surface)
-                #         & (metadata["smoothness"] == smoothness)
-                #     ]["id"]
-                #)
-
         print(f"{round((time.time()-start )/ 60)} mins to download all training images")
 
         # metadata.groupby(['surface_clean', 'smoothness']).size()
 
 if __name__ == "__main__":
-    download_training_images()
+    #download_training_images([0,1])
+    download_training_images([2], n_per_chunk=None)
