@@ -83,6 +83,9 @@ For the training data, our aim is to intersect Mapillary images with OSM surface
 - **[Step 6](/scripts/ds_creation_steps/s6_prepare_manual_annotation.py): prepare manual annotation**
   - for manual annotation in Labelstudio, required files are prepared and sorted according to the number of annotators and batch sizes (data is annotated iteratively)
 
+- **[Step 7](/scripts/ds_creation_steps/s7_prepare_image_folders.py): prepare image folders**
+  - after data has been annotated, image folders are created according to the labels
+
 
 ### Dataset versions
 
@@ -197,4 +200,4 @@ A combination of labeled images from **V4**, *V5_c0** and **V5_c1**.
 
 **V7**
 
-A combination of labeled images from V4, V5_c0, V5_c1, **V5_c2**.
+A combination of labeled **asphalt** images from V4, V5_c0, V5_c1, **V5_c2**.
