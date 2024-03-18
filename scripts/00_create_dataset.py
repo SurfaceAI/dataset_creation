@@ -5,6 +5,7 @@ from ds_creation_steps import s3_intersect_mapillary_osm as s3
 from scripts.ds_creation_steps import s4_select_train_images as s4
 from scripts.ds_creation_steps import s5_download_train_images as s5
 from scripts.ds_creation_steps import s6_prepare_manual_annotation as s6
+from scripts.ds_creation_steps import s7_prepare_image_folders as s7
 
 import sys
 import os
@@ -59,3 +60,9 @@ print(f"training images already downloaded, step is skipped")
 
 # Step 6: prepare data for manual labeling with labelstudio
 s6.prepare_manual_annotation(config.chunk_ids)
+
+# Step 7: prepare image folders for manual labeling
+output_version = "V7"
+input_versions = ["V4", "V5_c0", "V5_c1", "V5_c2"]
+root_path = os.path.join("/", "Users", "alexandra", "Nextcloud-HTW", "SHARED", "SurfaceAI", "data", "mapillary_images", "training")
+s7.create_image_folders(output_version, input_versions, root_path)

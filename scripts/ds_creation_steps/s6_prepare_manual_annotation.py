@@ -82,15 +82,22 @@ def create_labelstudio_input_file(metadata, is_testdata, output_path):
 
 # filter to only include images with confident surface prediction
 def filter_by_model_prediction(metadata, chunk_id):
-    model_prediction = pd.read_csv(config.model_prediction_path.format(config.ds_version, config.ds_version, chunk_id), dtype={"image_id": str})   
+    model_pred_path = os.path.join(config.model_prediction_path.format((config.ds_version+"_c"+str(chunk_id)), 
+                                                                       config.ds_version, 
+                                                                       chunk_id),
+                                    config.model_prediction_file[config.ds_version+"c"+str(chunk_id)])
+    model_prediction = pd.read_csv(model_pred_path, dtype={"Image": str}) 
 
-
+    # the prediction holds a value for each surface and a class probability. Only keep the highest prob.
+    idx = model_prediction.groupby("Image")["Prediction"].idxmax()
+    model_prediction = model_prediction.loc[idx]   
+    
     df = (metadata
      .set_index("id")
-     .join(model_prediction.set_index("image_id"), how="left")
+     .join(model_prediction.set_index("Image"), how="left")
     )
     df["combined_prediction"] = "no prediction"
-    df.loc[df.model_prediction == df.surface_clean, "combined_prediction"] = df[df.model_prediction == df.surface_clean].surface_clean
+    df.loc[df.Level_0 == df.surface_clean, "combined_prediction"] = df[df.Level_0 == df.surface_clean].surface_clean
 
     with open(config.chunk_filtered_img_ids_path.format(config.ds_version, chunk_id, "txt"), "w") as file:
         for item in df[df.combined_prediction == "no prediction"].index.tolist():
@@ -98,7 +105,7 @@ def filter_by_model_prediction(metadata, chunk_id):
 
     return (df[df.combined_prediction != "no prediction"].index.tolist())
 
-def prepare_manual_annotation(chunk_ids=None):
+def prepare_manual_annotation(chunk_ids=None, n_per_chunk=100):
     # read and shuffle metadata
     # shuffle images so they are not ordered by surface/smoothness of location
     metadata = (pd
@@ -107,7 +114,7 @@ def prepare_manual_annotation(chunk_ids=None):
                 )
 
     if chunk_ids is None:
-        chunk_ids = range(1, math.ceil(len(metadata) / config.n_per_chunk))
+        chunk_ids = range(1, math.ceil(len(metadata) / n_per_chunk))
 
     for chunk_id in chunk_ids:
         if chunk_id == 0:
@@ -127,7 +134,7 @@ def prepare_manual_annotation(chunk_ids=None):
             md_grouped = (chunk_metadata
                             .groupby(["surface_clean", "smoothness_clean"]))
             
-            # give a third of each group to each annotator
+            # give a share accordingly to each annotator
             for i in range(0, config.n_annotators):
                 # create chunks
                 imgids_ann = []
@@ -155,6 +162,7 @@ def prepare_manual_annotation(chunk_ids=None):
 
 
 if __name__=="__main__":
-    prepare_manual_annotation(chunk_ids=[1])
+    #prepare_manual_annotation(chunk_ids=[0,1])
+    prepare_manual_annotation(chunk_ids=[2], n_per_chunk=None)
 
 

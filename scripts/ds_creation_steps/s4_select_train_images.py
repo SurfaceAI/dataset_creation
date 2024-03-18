@@ -8,6 +8,7 @@ sys.path.append("./")
 
 import utils
 import config
+import constants as const
 
 # further filter image selection for training dataset
 def select_training_sample():
@@ -111,7 +112,7 @@ def select_training_sample():
             index=False,
         )
 
-def create_chunks(chunk_ids):
+def create_chunks(chunk_ids, n_per_chunk=100, selected_surface=None, selected_smoothness=None):
     # read and shuffle metadata
     # shuffle images so they are not ordered by surface/smoothness of location
     chunks_folder = config.chunks_folder.format(config.ds_version)
@@ -133,7 +134,7 @@ def create_chunks(chunk_ids):
     
     if (chunk_ids is None) or (max(chunk_ids) > 0):
         if chunk_ids is None:
-            chunk_ids = range(1, math.ceil(len(metadata) / config.n_per_chunk))
+            chunk_ids = range(1, math.ceil(len(metadata) / n_per_chunk))
         else:
             chunk_ids = [x for x in chunk_ids if x > 0]
 
@@ -153,33 +154,45 @@ def create_chunks(chunk_ids):
                 with open(config.chunk_img_ids_path.format(config.ds_version, i, "txt"), "r") as file:
                     already_labled_ids = file.read().splitlines()
                 metadata = metadata[~metadata.id.isin(already_labled_ids)]
+
+        # select surface and smoothness
+        if selected_surface is not None:
+            metadata = metadata[metadata.surface_clean.isin(selected_surface)]
+        if selected_smoothness is not None:
+            metadata = metadata[metadata.smoothness_clean.isin(selected_smoothness)]
         
-        for chunk_id in chunk_ids:
+        if n_per_chunk is not None:
+            for chunk_id in chunk_ids:
             # create a txt file for each chunk
-            chunk_imgids = []
-            md_grouped = (metadata.groupby(["surface_clean", "smoothness_clean"]))
                 
-            # are there enough imgs left to sample from?
-            # if not: take the rest of images for classes below the n chunk size and append them
-            groups_below_chunksize = md_grouped.size()[md_grouped.size() < (config.n_per_chunk*config.n_annotators)]
-            if len(groups_below_chunksize) > 0:
-                chunk_imgids += (md_grouped
-                .sample(frac=1, random_state=1)
-                .set_index(["surface_clean", "smoothness_clean"])
-                .loc[groups_below_chunksize.index]["id"]
-                .tolist()
+            # if n_per_chunk is none, then include all images
+            # else, sample according to chunk_size
+                chunk_imgids = []
+                md_grouped = (metadata.groupby(["surface_clean", "smoothness_clean"]))
+                # are there enough imgs left to sample from?
+                # if not: take the rest of images for classes below the n chunk size and append them
+                groups_below_chunksize = md_grouped.size()[md_grouped.size() < (n_per_chunk*config.n_annotators)]
+                if len(groups_below_chunksize) > 0:
+                    chunk_imgids += (md_grouped
+                    .sample(frac=1, random_state=1)
+                    .set_index(["surface_clean", "smoothness_clean"])
+                    .loc[groups_below_chunksize.index]["id"]
+                    .tolist()
+                    )
+
+                # then append the chunk size for the remaining classes
+                groups_in_chunksize = md_grouped.size()[md_grouped.size() >= (n_per_chunk*config.n_annotators)]
+
+                chunk_imgids += (metadata
+                    .set_index(["surface_clean", "smoothness_clean"])
+                    .loc[groups_in_chunksize.index]
+                    .groupby(["surface_clean", "smoothness_clean"])
+                    .sample((n_per_chunk*config.n_annotators), random_state=1)["id"]
+                    .tolist()
                 )
-
-            # then append the chunk size for the remaining classes
-            groups_in_chunksize = md_grouped.size()[md_grouped.size() >= (config.n_per_chunk*config.n_annotators)]
-
-            chunk_imgids += (metadata
-                .set_index(["surface_clean", "smoothness_clean"])
-                .loc[groups_in_chunksize.index]
-                .groupby(["surface_clean", "smoothness_clean"])
-                .sample((config.n_per_chunk*config.n_annotators), random_state=1)["id"]
-                .tolist()
-            )
+        else:
+            chunk_imgids = metadata["id"].tolist()
+            chunk_id = chunk_ids[0]
 
             with open(config.chunk_img_ids_path.format(config.ds_version, chunk_id, "txt"), "w") as file:
                 for item in chunk_imgids:
@@ -188,4 +201,6 @@ def create_chunks(chunk_ids):
      
 if __name__ == "__main__":
     #select_training_sample()
-    create_chunks()
+    #create_chunks([1], n_per_chunk=100)
+    # chunk 2 only consists of asphalt intermediate and bad
+    create_chunks([2], n_per_chunk=None, selected_surface=[const.ASPHALT], selected_smoothness=[const.INTERMEDIATE, const.BAD])

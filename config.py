@@ -32,14 +32,19 @@ imgs_per_class = 2000
 
 ##labelstudio
 # labelstudio_absolute_path = "http://localhost:8080/data/local-files/?d={}"
-n_annotators = 3
+n_annotators = 2
 # n img per class for for interrater reliability
 n_irr = 10
 
 # n img per cluss for each chunk when annotating
 chunk_ids = [2]
-n_per_chunk = 100
-model_prediction_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/{}/metadata/model_predictions_{}_c{}_predicted.csv"
+# n_per_chunk = 100
+# TODO: standardize naming
+#model_prediction_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/{}/metadata/model_predictions_{}_c{}_predicted.csv"
+model_prediction_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/{}/metadata/"
+model_prediction_file = {"v5c1": "model_predictions_V5_c1_predicted.csv",
+                        "v5c2": "surface_prediction-V5_c2-20240215_143635.csv"}
+
 labelstudio_absolute_path = "https://freemove.f4.htw-berlin.de/data/local-files/?d={}"
 labelstudio_predictions_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}/sample_predictions.json"
 # img ids that have previously already been labeled and should be excluded in further labeling to avoid redundant work

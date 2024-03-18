@@ -4,9 +4,6 @@ import shutil
 
 # This script combines all annotated images from different versions and creates folders for the images
 
-output_version = "V6"
-input_versions = ["V4", "V5_c0", "V5_c1"]
-root_path = os.path.join("/", "Users", "alexandra", "Nextcloud-HTW", "SHARED", "SurfaceAI", "data", "mapillary_images", "training")
 
 
 def combined_annotations(path, iv, type="concat"): # types: V4, majority_vote, concat
@@ -18,6 +15,8 @@ def combined_annotations(path, iv, type="concat"): # types: V4, majority_vote, c
         "annotations_a2.csv",
         "annotations_a3.csv",
     ]
+    if iv == "V5_c2":
+        files = files[0:2]
 
     df = pd.DataFrame()
     for file in files:
@@ -96,26 +95,38 @@ def create_annotated_image_folders(root_path, output_version, df):
 
 
 
+def create_image_folders(output_version, input_version, root_path):
+    all_annotations = pd.DataFrame()
+    for iv in input_versions:
+        # annotations for each version
+        path = os.path.join(root_path, iv, "metadata")
 
+        if iv == "V4":
+            annotations = combined_annotations(path, iv, "V4")
+        elif iv == "V5_c0":
+            annotations = combined_annotations(path, iv, "majority_vote")
+        else:
+            annotations = combined_annotations(path, iv, "concat")
+        
+        all_annotations = pd.concat([all_annotations, annotations])
 
-all_annotations = pd.DataFrame()
-for iv in input_versions:
-    # annotations for each version
-    path = os.path.join(root_path, iv, "metadata")
+    # remove duplicates
+    all_annotations.drop_duplicates(subset="image_id", keep="first", inplace=True)
+    os.makedirs(os.path.join(root_path, output_version, "metadata"), exist_ok=True)
 
-    if iv == "V4":
-        annotations = combined_annotations(path, iv, "V4")
-    elif iv == "V5_c0":
-        annotations = combined_annotations(path, iv, "majority_vote")
-    else:
-        annotations = combined_annotations(path, iv, "concat")
+    # for V7, only include asphalt data
+    if output_version == "V7":
+        all_annotations = all_annotations[all_annotations.surface == "asphalt"]
     
-    all_annotations = pd.concat([all_annotations, annotations])
+    all_annotations.to_csv(os.path.join(root_path, output_version, "metadata", "annotations_combined.csv"))
 
-# remove duplicates
-all_annotations.drop_duplicates(subset="image_id", keep="first", inplace=True)
-os.makedirs(os.path.join(root_path, output_version, "metadata"), exist_ok=True)
-all_annotations.to_csv(os.path.join(root_path, output_version, "metadata", "annotations_combined.csv"))
+    # move images to folders
+    create_annotated_image_folders(root_path, output_version, all_annotations)
 
-# move images to folders
-create_annotated_image_folders(root_path, output_version, all_annotations)
+
+if __name__ == "__main__":
+    output_version = "V7"
+    input_versions = ["V4", "V5_c0", "V5_c1", "V5_c2"]
+    root_path = os.path.join("/", "Users", "alexandra", "Nextcloud-HTW", "SHARED", "SurfaceAI", "data", "mapillary_images", "training")
+    create_image_folders(output_version, input_versions, root_path)
+ 
