@@ -15,7 +15,7 @@ def combined_annotations(path, iv, type="concat"): # types: V4, majority_vote, c
         "annotations_a2.csv",
         "annotations_a3.csv",
     ]
-    if iv == "V5_c2":
+    if iv in ["V5_c2", "V5_c3", "V5_c4"]:
         files = files[0:2]
 
     df = pd.DataFrame()
@@ -125,8 +125,8 @@ def create_image_folders(output_version, input_version, root_path):
 
 
 if __name__ == "__main__":
-    output_version = "V7"
-    input_versions = ["V4", "V5_c0", "V5_c1", "V5_c2"]
+    output_version = "V9"
+    input_versions = ["V4", "V5_c0", "V5_c1", "V5_c2", "V5_c3", "V5_c4", "V5_c5", "V5_c6", "V5_c7"]
     root_path = os.path.join("/", "Users", "alexandra", "Nextcloud-HTW", "SHARED", "SurfaceAI", "data", "mapillary_images", "training")
     create_image_folders(output_version, input_versions, root_path)
  

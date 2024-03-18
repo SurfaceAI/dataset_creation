@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 # setting path
 import os
@@ -103,7 +104,12 @@ def filter_by_model_prediction(metadata, chunk_id):
         for item in df[df.combined_prediction == "no prediction"].index.tolist():
             file.write("%s\n" % item)
 
-    return (df[df.combined_prediction != "no prediction"].index.tolist())
+    img_ids = df[df.combined_prediction != "no prediction"].index.tolist()
+    if os.path.exists(config.manual_added_images.format(config.ds_version, chunk_id, "txt")):
+        with open(config.manual_added_images.format(config.ds_version, chunk_id, "txt"), "r") as file: 
+            img_ids += [line.strip() for line in file]
+        
+    return (img_ids)
 
 def prepare_manual_annotation(chunk_ids=None, n_per_chunk=100):
     # read and shuffle metadata
@@ -128,8 +134,12 @@ def prepare_manual_annotation(chunk_ids=None, n_per_chunk=100):
             with open(config.chunk_img_ids_path.format(config.ds_version, chunk_id, "txt"), "r") as file:
                 chunk_img_ids = file.read().splitlines()
 
-            filtered_chunk_img_ids = filter_by_model_prediction(metadata[metadata.id.isin(chunk_img_ids)], chunk_id)
-            chunk_metadata = metadata[metadata.id.isin(filtered_chunk_img_ids)]
+            chunk_metadata = metadata[metadata.id.isin(chunk_img_ids)]
+            
+            # dont use filter for concrete chunk
+            if not((config.ds_version == "v5") & (np.isin(chunk_id, [6,8]))):
+                filtered_chunk_img_ids = filter_by_model_prediction(chunk_metadata, chunk_id)
+                chunk_metadata = metadata[metadata.id.isin(filtered_chunk_img_ids)]
 
             md_grouped = (chunk_metadata
                             .groupby(["surface_clean", "smoothness_clean"]))
@@ -163,6 +173,12 @@ def prepare_manual_annotation(chunk_ids=None, n_per_chunk=100):
 
 if __name__=="__main__":
     #prepare_manual_annotation(chunk_ids=[0,1])
-    prepare_manual_annotation(chunk_ids=[2], n_per_chunk=None)
+    #prepare_manual_annotation(chunk_ids=[2], n_per_chunk=None)
+    #prepare_manual_annotation(chunk_ids=[3], n_per_chunk=None)
+    #prepare_manual_annotation(chunk_ids=[4], n_per_chunk=None)
+    #prepare_manual_annotation(chunk_ids=[5], n_per_chunk=None)
+    #prepare_manual_annotation(chunk_ids=[6], n_per_chunk=None)
+    #prepare_manual_annotation(chunk_ids=[7], n_per_chunk=None)
+    prepare_manual_annotation(chunk_ids=[8], n_per_chunk=None)
 
 

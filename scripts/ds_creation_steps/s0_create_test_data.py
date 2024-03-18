@@ -41,7 +41,7 @@ def get_autonahn_in_boundary(city, boundary):
     return autobahn_in_boundary
 
 
-def select_test_images(city, boundary):
+def select_test_images(city, boundary, center_bbox):
     metadata = pd.read_csv(config.test_tiles_metadata_path.format(city), dtype={"id": int})
 
     # remove panorama img
@@ -49,6 +49,7 @@ def select_test_images(city, boundary):
 
     # only images after defined timestamp
     metadata = metadata[metadata["captured_at"] >= config.time_filter_unix]
+    
     # to get max diversity of images:
     # take max 5 images per sequence
     # take max 5 images per 100 meter raster cell
@@ -87,8 +88,14 @@ def select_test_images(city, boundary):
         ~pts.geometry.intersects(autobahn_in_boundary.unary_union)
     ]
 
-    # sample 1000 from remaining
-    metadata = metadata.sample(1000, random_state=1)
+    # select only images from city center
+    metadata = metadata[(metadata.lon > center_bbox["xmin"]) & 
+                        (metadata.lon < center_bbox["xmax"]) & 
+                        (metadata.lat > center_bbox["ymin"]) & 
+                        (metadata.lat < center_bbox["ymax"])]
+
+    # sample remaining
+    metadata = metadata.sample(config.sample_size_test_city, random_state=1)
 
     metadata.to_csv(
         config.test_image_selection_metadata_path.format(city), index=False
@@ -170,92 +177,137 @@ def intersect_test_images_with_osm(city):
     )
 
 
-def create_test_data(cities):
-    print("create test data")
-    for city in cities:
-        print("city: ", city)
+# def create_test_data(cities):
+#     print("create test data")
+#     for city in cities:
+#         print("city: ", city)
 
-        boundary = gpd.read_file(config.boundary.format(city), crs="EPSG:4326")
+#         boundary = gpd.read_file(config.boundary.format(city), crs="EPSG:4326")
 
-        # Step 0_0: get all tiles within city boundary and write to csv
-        if not os.path.exists(config.test_city_tiles_path.format(city)):
-             utils.write_tiles_within_boundary(config.test_city_tiles_path.format(city), boundary)
-        else:
-            print(
-                f"tiles info already downloaded ({config.test_city_tiles_path.format(city)}), step is skipped"
-            )
+#         # Step 0_0: get all tiles within city boundary and write to csv
+#         if not os.path.exists(config.test_city_tiles_path.format(city)):
+#              utils.write_tiles_within_boundary(config.test_city_tiles_path.format(city), boundary)
+#         else:
+#             print(
+#                 f"tiles info already downloaded ({config.test_city_tiles_path.format(city)}), step is skipped"
+#             )
 
-        # Step 0_1: get metadata for all images within city boundary
-        tiles = pd.read_csv(config.test_city_tiles_path.format(city))
-        if not os.path.exists(config.test_tiles_metadata_path.format(city)):
-            print(f"download metadata for {len(tiles)} tiles")
-            # write metadata of all potential images to csv
-            utils.query_and_write_img_metadata(
-                tiles, config.test_tiles_metadata_path.format(city)
-            )
-        else:
-            print(
-                f"img metadata already downloaded ({config.test_tiles_metadata_path.format(city)}), step is skipped"
-            )
+#         # Step 0_1: get metadata for all images within city boundary
+#         tiles = pd.read_csv(config.test_city_tiles_path.format(city))
+#         if not os.path.exists(config.test_tiles_metadata_path.format(city)):
+#             print(f"download metadata for {len(tiles)} tiles")
+#             # write metadata of all potential images to csv
+#             utils.query_and_write_img_metadata(
+#                 tiles, config.test_tiles_metadata_path.format(city)
+#             )
+#         else:
+#             print(
+#                 f"img metadata already downloaded ({config.test_tiles_metadata_path.format(city)}), step is skipped"
+#             )
 
-        # Step 0_2: create samll raster template for city
-        if not os.path.exists(config.test_small_raster_template.format(city)):
-            # create an assignment to a fine grid
-            gdf = gpd.read_file(config.boundary.format(city), crs="EPSG:4326")
-            # transform crs to web mercator (needed for mercantile tiles)
-            gdf = gdf.to_crs("EPSG:3035")
-            xmin, ymin, xmax, ymax = gdf.total_bounds
-            rf.create_raster(
-                int(xmin),
-                int(xmax),
-                int(ymin),
-                int(ymax),
-                "epsg:3035",
-                config.test_small_raster_template.format(city),
-                resolution=100,
-            )
+#         # Step 0_2: create samll raster template for city
+#         if not os.path.exists(config.test_small_raster_template.format(city)):
+#             # create an assignment to a fine grid
+#             gdf = gpd.read_file(config.boundary.format(city), crs="EPSG:4326")
+#             # transform crs to web mercator (needed for mercantile tiles)
+#             gdf = gdf.to_crs("EPSG:3035")
+#             xmin, ymin, xmax, ymax = gdf.total_bounds
+#             rf.create_raster(
+#                 int(xmin),
+#                 int(xmax),
+#                 int(ymin),
+#                 int(ymax),
+#                 "epsg:3035",
+#                 config.test_small_raster_template.format(city),
+#                 resolution=100,
+#             )
 
-            rf.raster_ids_for_points(
-                config.test_small_raster_template.format(city),
-                config.test_tiles_metadata_path.format(city),
-                config.test_tiles_metadata_path.format(city),
-                3035,
-            )
-        else:
-            print(
-                f"small raster template already created ({config.test_small_raster_template.format(city)}), step is skipped"
-            )
+#             rf.raster_ids_for_points(
+#                 config.test_small_raster_template.format(city),
+#                 config.test_tiles_metadata_path.format(city),
+#                 config.test_tiles_metadata_path.format(city),
+#                 3035,
+#             )
+#         else:
+#             print(
+#                 f"small raster template already created ({config.test_small_raster_template.format(city)}), step is skipped"
+#             )
 
-        # Step 0_3: select images for test data
-        if not os.path.exists(config.test_image_selection_metadata_path.format(city)):
-            # filter by year
-            select_test_images(city, boundary)
-        else:
-            print(
-                f"images already selected ({config.test_image_selection_metadata_path.format(city)}), step is skipped"
-            )
+#         # Step 0_3: select images for test data
+#         if not os.path.exists(config.test_image_selection_metadata_path.format(city)):
+#             # filter by year
+#             select_test_images(city, boundary)
+#         else:
+#             print(
+#                 f"images already selected ({config.test_image_selection_metadata_path.format(city)}), step is skipped"
+#             )
 
-        # Step 0_4: download selected test images
-        if not os.path.exists(config.test_image_folder.format(city)):
-            download_test_images(city)
-        else:
-            print("images already downloaded, step is skipped")
+#         # Step 0_4: download selected test images
+#         if not os.path.exists(config.test_image_folder.format(city)):
+#             download_test_images(city)
+#         else:
+#             print("images already downloaded, step is skipped")
 
-        # Step 0_5: intersect with OSM
-        if not os.path.exists(config.test_image_metadata_with_tags_path.format(city)):
-            # create mapillary_testdata_meta table in postgres
-            intersect_test_images_with_osm(city)
-        else:
-            print("already intersected with osm, step is skipped")
+#         # Step 0_5: intersect with OSM
+#         if not os.path.exists(config.test_image_metadata_with_tags_path.format(city)):
+#             # create mapillary_testdata_meta table in postgres
+#             intersect_test_images_with_osm(city)
+#         else:
+#             print("already intersected with osm, step is skipped")
+
+
+def raster_id_by_res(boundary, resolution, output_file_path, city):
+    # transform crs to web mercator (needed for mercantile tiles)
+    boundary = boundary.to_crs("EPSG:3035")
+    xmin, ymin, xmax, ymax = boundary.total_bounds
+    rf.create_raster(
+        int(xmin),
+        int(xmax),
+        int(ymin),
+        int(ymax),
+        "epsg:3035",
+        output_file_path,
+        resolution=resolution,
+    )
+
+    rf.raster_ids_for_points(
+        config.test_small_raster_template.format(city),
+        config.test_tiles_metadata_path.format(city),
+        config.test_tiles_metadata_path.format(city),
+        3035,
+    )
 
 
 if __name__ == "__main__":
     cities = [
-        const.COLOGNE,
-        const.MUNICH,
+        #const.COLOGNE,
+        #const.MUNICH,
         const.DRESDEN,
-        const.HEILBRONN,
-        const.LUNENBURG,
+        #const.HEILBRONN,
+        #const.LUNENBURG,
     ]
+
+    for city in cities:
+        print("city: ", city)
+        boundary = gpd.read_file(config.boundary.format(city), crs="EPSG:4326")
     
-    create_test_data(cities)
+        # Step 0_0: get all tiles within city boundary and write to csv
+        #utils.write_tiles_within_boundary(config.test_city_tiles_path.format(city), boundary)
+    
+        # Step 0_1: get metadata for all images within city boundary
+        #tiles = pd.read_csv(config.test_city_tiles_path.format(city))
+        #utils.query_and_write_img_metadata(
+        #    tiles, config.test_tiles_metadata_path.format(city)
+        #)
+    
+        # Step 0_2: create samll raster template for city
+        #raster_id_by_res(boundary, 100, config.test_small_raster_template.format(city), city)
+
+        # Step 0_3: select images for test data
+        select_test_images(city, boundary, config.center_bboxes[city])
+
+        # Step 0_4: download selected test images
+        download_test_images(city)
+
+        # Step 0_5: intersect with OSM
+        intersect_test_images_with_osm(city)
