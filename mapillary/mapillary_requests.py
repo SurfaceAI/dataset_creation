@@ -3,9 +3,13 @@ import requests
 from vt2geojson.tools import vt_bytes_to_geojson
 from PIL import Image
 from io import BytesIO
+import os
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).parent.parent
 
 # load mapillary access token
-def load_mapillary_token(token_path = 'mapillary_token.txt'):
+def load_mapillary_token(token_path = os.path.join(ROOT_DIR, 'mapillary_token.txt')):
     with open(token_path, 'r') as file:
         access_token = file.read()
 
@@ -72,6 +76,7 @@ def request_image_data_from_image_entity(image_id,
                                          url=True, 
                                          image_size='thumb_1024_url', 
                                          detections=True, 
+                                         creator = False,
                                          captured_at=False, 
                                          compass_angle=False, 
                                          geometry=False, 
@@ -87,6 +92,9 @@ def request_image_data_from_image_entity(image_id,
     if detections:
         fields += ',detections.value,detections.geometry,detections.created_at'
 
+    if creator:
+        fields += ',creator'
+    
     if captured_at:
         fields += ',captured_at'
     
