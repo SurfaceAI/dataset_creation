@@ -11,6 +11,7 @@ from shapely.geometry import Point
 
 import sys
 
+from s6_prepare_manual_annotation import create_labelstudio_input_file
 # setting path
 sys.path.append("./")
 sys.path.append("../")
@@ -44,6 +45,12 @@ def get_autonahn_in_boundary(city, boundary):
 def select_test_images(city, boundary, center_bbox):
     metadata = pd.read_csv(config.test_tiles_metadata_path.format(city), dtype={"id": int})
 
+    # select only images from city center
+    metadata = metadata[(metadata.lon > center_bbox["xmin"]) & 
+                        (metadata.lon < center_bbox["xmax"]) & 
+                        (metadata.lat > center_bbox["ymin"]) & 
+                        (metadata.lat < center_bbox["ymax"])]
+    
     # remove panorama img
     metadata = metadata[metadata["is_pano"] == False]
 
@@ -68,7 +75,6 @@ def select_test_images(city, boundary, center_bbox):
             replace=True,
         )
         .drop_duplicates()
-        .sample(2000, random_state=1)
     )
 
     # remove images on the autobahn
@@ -88,12 +94,6 @@ def select_test_images(city, boundary, center_bbox):
         ~pts.geometry.intersects(autobahn_in_boundary.unary_union)
     ]
 
-    # select only images from city center
-    metadata = metadata[(metadata.lon > center_bbox["xmin"]) & 
-                        (metadata.lon < center_bbox["xmax"]) & 
-                        (metadata.lat > center_bbox["ymin"]) & 
-                        (metadata.lat < center_bbox["ymax"])]
-
     # sample remaining
     metadata = metadata.sample(config.sample_size_test_city, random_state=1)
 
@@ -104,7 +104,7 @@ def select_test_images(city, boundary, center_bbox):
 
 def download_test_images(city):
     start = time.time()
-    os.makedirs(config.test_image_folder.format(city))
+    os.makedirs(config.test_image_folder.format(city), exist_ok=True)
 
     with open(
         config.test_image_selection_metadata_path.format(city), newline=""
@@ -134,35 +134,26 @@ def intersect_test_images_with_osm(city):
 
     # Execute the intersection query
     temp_path = "data/temp.csv"
-    pd.read_csv(config.test_image_selection_metadata_path.format(city)).drop(
-        columns=["cell_ids"]
-    ).to_csv(temp_path, index=False)
+    image_selection = pd.read_csv(config.test_image_selection_metadata_path.format(city))
+    image_selection.drop(columns=["cell_ids"]).to_csv(temp_path, index=False)
 
     absolute_path = os.path.join(os.getcwd(), temp_path)
     with conn.cursor(cursor_factory=DictCursor) as cursor:
-        query = str.replace(query, "{table_name}", "mapillary_testdata_meta")
-        cursor.execute(sql.SQL(query.format(absolute_path)))
+        cursor.execute(sql.SQL(
+                    query.format(
+                        table_name="mapillary_testdata_meta", absolute_path=absolute_path
+                    )
+                ))
         conn.commit()
     conn.close()
     os.remove(absolute_path)
 
     # for each tile, SQL query of intersecting ways with surface / smoothness tags
-    tiles = pd.DataFrame()
-    # for city in cities:
-    # city_tiles = pd.read_csv(config.test_city_tiles_path.format(city))
-    # tiles = pd.concat([tiles, city_tiles]
-    tiles = pd.read_csv(config.test_city_tiles_path.format(city))
-    tile_ids = (
-        tiles["x"].astype(str)
-        + "_"
-        + tiles["y"].astype(str)
-        + "_"
-        + tiles["z"].astype(str)
-    )
+    tile_ids = image_selection.tile_id.unique()
 
     start = time.time()
-    print(f"{len(tile_ids.unique())} tiles to intersect with OSM")
-    for tile_id in tile_ids.unique():
+    print(f"{len(tile_ids)} tiles to intersect with OSM")
+    for tile_id in tile_ids:
         utils.intersect_mapillary_osm(tile_id, "mapillary_testdata_meta")
 
     end = time.time()
@@ -175,85 +166,6 @@ def intersect_test_images_with_osm(city):
         config.test_image_metadata_with_tags_path.format(city),
         where_clause="",
     )
-
-
-# def create_test_data(cities):
-#     print("create test data")
-#     for city in cities:
-#         print("city: ", city)
-
-#         boundary = gpd.read_file(config.boundary.format(city), crs="EPSG:4326")
-
-#         # Step 0_0: get all tiles within city boundary and write to csv
-#         if not os.path.exists(config.test_city_tiles_path.format(city)):
-#              utils.write_tiles_within_boundary(config.test_city_tiles_path.format(city), boundary)
-#         else:
-#             print(
-#                 f"tiles info already downloaded ({config.test_city_tiles_path.format(city)}), step is skipped"
-#             )
-
-#         # Step 0_1: get metadata for all images within city boundary
-#         tiles = pd.read_csv(config.test_city_tiles_path.format(city))
-#         if not os.path.exists(config.test_tiles_metadata_path.format(city)):
-#             print(f"download metadata for {len(tiles)} tiles")
-#             # write metadata of all potential images to csv
-#             utils.query_and_write_img_metadata(
-#                 tiles, config.test_tiles_metadata_path.format(city)
-#             )
-#         else:
-#             print(
-#                 f"img metadata already downloaded ({config.test_tiles_metadata_path.format(city)}), step is skipped"
-#             )
-
-#         # Step 0_2: create samll raster template for city
-#         if not os.path.exists(config.test_small_raster_template.format(city)):
-#             # create an assignment to a fine grid
-#             gdf = gpd.read_file(config.boundary.format(city), crs="EPSG:4326")
-#             # transform crs to web mercator (needed for mercantile tiles)
-#             gdf = gdf.to_crs("EPSG:3035")
-#             xmin, ymin, xmax, ymax = gdf.total_bounds
-#             rf.create_raster(
-#                 int(xmin),
-#                 int(xmax),
-#                 int(ymin),
-#                 int(ymax),
-#                 "epsg:3035",
-#                 config.test_small_raster_template.format(city),
-#                 resolution=100,
-#             )
-
-#             rf.raster_ids_for_points(
-#                 config.test_small_raster_template.format(city),
-#                 config.test_tiles_metadata_path.format(city),
-#                 config.test_tiles_metadata_path.format(city),
-#                 3035,
-#             )
-#         else:
-#             print(
-#                 f"small raster template already created ({config.test_small_raster_template.format(city)}), step is skipped"
-#             )
-
-#         # Step 0_3: select images for test data
-#         if not os.path.exists(config.test_image_selection_metadata_path.format(city)):
-#             # filter by year
-#             select_test_images(city, boundary)
-#         else:
-#             print(
-#                 f"images already selected ({config.test_image_selection_metadata_path.format(city)}), step is skipped"
-#             )
-
-#         # Step 0_4: download selected test images
-#         if not os.path.exists(config.test_image_folder.format(city)):
-#             download_test_images(city)
-#         else:
-#             print("images already downloaded, step is skipped")
-
-#         # Step 0_5: intersect with OSM
-#         if not os.path.exists(config.test_image_metadata_with_tags_path.format(city)):
-#             # create mapillary_testdata_meta table in postgres
-#             intersect_test_images_with_osm(city)
-#         else:
-#             print("already intersected with osm, step is skipped")
 
 
 def raster_id_by_res(boundary, resolution, output_file_path, city):
@@ -281,8 +193,8 @@ def raster_id_by_res(boundary, resolution, output_file_path, city):
 if __name__ == "__main__":
     cities = [
         #const.COLOGNE,
-        #const.MUNICH,
-        const.DRESDEN,
+        const.MUNICH,
+        #const.DRESDEN,
         #const.HEILBRONN,
         #const.LUNENBURG,
     ]
@@ -311,3 +223,9 @@ if __name__ == "__main__":
 
         # Step 0_5: intersect with OSM
         intersect_test_images_with_osm(city)
+
+        # # Step 0_6: prepare labelstudio annotation
+        metadata = pd.read_csv(config.test_image_metadata_with_tags_path.format(city))
+        metadata = utils.clean_surface(metadata)
+        metadata = utils.clean_smoothness(metadata)
+        create_labelstudio_input_file(metadata, is_testdata=True, output_path=config.test_labelstudio_input_path.format(city), test_city=city)

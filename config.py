@@ -26,13 +26,14 @@ imgs_per_class = 2000
 # test data paramenters
 # timestamp filter 1.6.2021
 time_filter_unix = 1609891200000
-max_img_per_sequence_test = 10
-max_img_per_cell = 5
+max_img_per_sequence_test = 2
+max_img_per_cell = 2
 sample_size_test_city = 200
 
 # center bounding box
-center_bboxes = {const.COLOGNE: {"xmin": 13.71622, "xmax": 13.77058, "ymin": 51.02781, "ymax": 51.05603},
-                const.DRESDEN: {"xmin": 13.71622, "xmax": 13.77058, "ymin": 51.02781, "ymax": 51.05603}
+center_bboxes = {const.COLOGNE: {"xmin": 6.925906, "xmax": 6.998256, "ymin": 50.911576, "ymax": 50.956255},
+                const.DRESDEN: {"xmin": 13.709555, "xmax": 13.781723, "ymin": 51.02781, "ymax": 51.067380},
+                const.MUNICH: {"xmin": 11.52477, "xmax": 11.62034, "ymin": 48.09620, "ymax": 48.16591}
 }
 
 ##labelstudio
@@ -55,9 +56,10 @@ model_prediction_file = {"v5c1": "model_predictions_V5_c1_predicted.csv",
                          "v5c6": "surface_prediction-V5_c6-20240305_171454.csv",
                          "v5c7": "surface_prediction-V5_c7-20240306_100314.csv"}
 
-manual_added_images = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/{}_c{}/metadata/incorrect_filtered_images.txt"
+cloud_image_folder = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/"
+manual_added_images = os.path.join(cloud_image_folder, "training", "{}_c{}", "metadata", "incorrect_filtered_images.txt")
 labelstudio_absolute_path = "https://freemove.f4.htw-berlin.de/data/local-files/?d={}"
-labelstudio_predictions_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}/sample_predictions.json"
+labelstudio_predictions_path = os.path.join(cloud_image_folder, "training_data", "{}", "sample_predictions.json")
 # img ids that have previously already been labeled and should be excluded in further labeling to avoid redundant work
 labeled_imgids_path = os.path.join(data_folder, "labeled_imgids.txt")
 chunks_folder = os.path.join(data_folder, "{}", "chunks")
@@ -65,6 +67,10 @@ interrater_reliability_img_ids_path = os.path.join(chunks_folder, "interrater_re
 chunk_img_ids_path = os.path.join(chunks_folder, "c{}_img_ids.{}")
 chunk_filtered_img_ids_path = os.path.join(chunks_folder, "c{}_filtered_out_img_ids.{}")
 annotator_ids_path = os.path.join(chunks_folder, "c{}_annotator{}_img_ids.{}")
+
+# test data
+test_labelstudio_input_path = os.path.join(data_folder, "test_data", "{}", "labelstudio_input.json")
+
 
 # possible surface / smoothness combinations
 surfaces = [
@@ -93,7 +99,7 @@ germany_tiles_path = os.path.join(tag_counts_path, "germany_image_counts.csv")
 germany_raster_template_path = os.path.join(tag_counts_path, "germany_tile_raster_template.tif")
 
 autobahn_path = os.path.join(data_folder, "autobahn.shp")
-filtered_autobahn_path = os.path.join(data_folder, "{}", "autobahn_filtered.geojson")
+filtered_autobahn_path = os.path.join(data_folder, "test_data", "{}", "autobahn_filtered.geojson")
 # berlin_tiles_path = 'data/berlin_image_counts.csv'
 # berlin_raster_template = 'data/berlin_tile_raster_template.tif'
 # berlin_raster_image_counts = 'data/berlin_tile_raster.tif'

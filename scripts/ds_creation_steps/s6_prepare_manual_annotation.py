@@ -28,7 +28,7 @@ def training_entity(row, img_folder):
                         "from_name": "smoothness",
                         "to_name": "image",
                         "type": "choices",
-                        "value": {"choices": [row["smoothness"]]},
+                        "value": {"choices": [row["smoothness_clean"]]},
                     },
                 ]
             }
@@ -40,11 +40,26 @@ def test_entity(row, img_folder):
     entity = {"data": {"image": f"{img_folder}/{row['id']}.jpg"}}
 
     # only add predictions if there is a surface, otherwise error from labelstudio
+    result = [{
+                    "from_name": "focus",
+                    "to_name": "image",
+                    "type": "choices",
+                    "value": {"choices": ["car/path in focus"]},
+                },
+                {
+                    "from_name": "surface_pedestrian",
+                    "to_name": "image",
+                    "type": "choices",
+                    "value": {"choices": ["non-existent"]},
+                },
+                 {
+                    "from_name": "surface_cycleway",
+                    "to_name": "image",
+                    "type": "choices",
+                    "value": {"choices": ["non-existent"]},
+                }]
     if isinstance(row["surface_clean"], str):
-        entity["predictions"] = [
-            {
-                "result": [
-                    {
+        result = result + [{
                         "from_name": "surface",
                         "to_name": "image",
                         "type": "choices",
@@ -54,23 +69,27 @@ def test_entity(row, img_folder):
                         "from_name": "smoothness",
                         "to_name": "image",
                         "type": "choices",
-                        "value": {"choices": [row["smoothness"]]},
-                    },
-                ]
-            }
-        ]
+                        "value": {"choices": [row["smoothness_clean"]]},
+                    }]
+    
+    entity["predictions"] = [
+        {
+            "result": result
+        }
+    ]
     return entity
 
 
-def create_labelstudio_input_file(metadata, is_testdata, output_path):
-    img_url =  config.labelstudio_absolute_path.format(config.ds_version)
+def create_labelstudio_input_file(metadata, is_testdata, output_path, test_city=None):
 
     # Convert each row to JSON object and collect them in a list
     json_data = []
     for _, row in metadata.iterrows():
         if is_testdata:
+            img_url =  config.labelstudio_absolute_path.format(f"test_data/{test_city}")
             entity = test_entity(row, img_url)
         else:
+            img_url =  config.labelstudio_absolute_path.format(config.ds_version)
             entity = training_entity(row, img_url)
         json_data.append(entity)
 

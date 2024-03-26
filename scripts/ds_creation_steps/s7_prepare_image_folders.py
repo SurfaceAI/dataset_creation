@@ -17,6 +17,8 @@ def combined_annotations(path, iv, type="concat"): # types: V4, majority_vote, c
     ]
     if iv in ["V5_c2", "V5_c3", "V5_c4"]:
         files = files[0:2]
+    elif iv in ["V9"]:
+        files = files[0:1]
 
     df = pd.DataFrame()
     for file in files:
@@ -107,11 +109,15 @@ def create_image_folders(output_version, input_version, root_path):
             annotations = combined_annotations(path, iv, "majority_vote")
         else:
             annotations = combined_annotations(path, iv, "concat")
+
+        # use image url from previous annotation but label from V9
+        if iv == "V9":
+            annotations = annotations.drop("input_version", axis=1).merge(all_annotations[["image_id", "input_version"]], on="image_id", how="left")
         
         all_annotations = pd.concat([all_annotations, annotations])
 
-    # remove duplicates
-    all_annotations.drop_duplicates(subset="image_id", keep="first", inplace=True)
+    # remove duplicates, keep most recent
+    all_annotations.drop_duplicates(subset="image_id", keep="last", inplace=True)
     os.makedirs(os.path.join(root_path, output_version, "metadata"), exist_ok=True)
 
     # for V7, only include asphalt data
@@ -125,8 +131,8 @@ def create_image_folders(output_version, input_version, root_path):
 
 
 if __name__ == "__main__":
-    output_version = "V9"
-    input_versions = ["V4", "V5_c0", "V5_c1", "V5_c2", "V5_c3", "V5_c4", "V5_c5", "V5_c6", "V5_c7"]
+    output_version = "V10"
+    input_versions = ["V4", "V5_c0", "V5_c1", "V5_c2", "V5_c3", "V5_c4", "V5_c5", "V5_c6", "V5_c7", "V9"]
     root_path = os.path.join("/", "Users", "alexandra", "Nextcloud-HTW", "SHARED", "SurfaceAI", "data", "mapillary_images", "training")
     create_image_folders(output_version, input_versions, root_path)
  
