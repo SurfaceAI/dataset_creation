@@ -87,7 +87,7 @@ For the training data, our aim is to intersect Mapillary images with OSM surface
   - after data has been annotated, image folders are created according to the labels
 
 
-### Dataset versions
+#### Dataset versions
 
 The process of creating training data was evolving. In the following section, we documented the evolution up to the currently used version and considerations applied in each version.
 Changes are marked in **bold**.
@@ -214,4 +214,10 @@ A combination of labeled **paving_stones** images from V4, V5_c0, V5_c1, V5_c2, 
 **V9**
 
 A combination  **all** labeled images from V4, V5_c0, V5_c1, V5_c2, V5_c3, V5_c4, **V5_c5, V5_c6, V5_c7**.
+
+**V10** 
+All images in V9 are used as training data and then predicted. All images where prediction and true label are not matching are revised, to catch annotation errors. (44 annotations from 350 misclassifications were adjusted.)
+
+**V11**
+All images from V10 and additionally a **subset of 10% of all images that were filtered out (by the model) in previous steps** are labeled. We include this step in case there is a systematic bias of images that are excluded by the model.
 

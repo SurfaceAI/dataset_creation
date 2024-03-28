@@ -61,7 +61,7 @@ def create_annotated_image_folders(root_path, output_version, df):
     os.makedirs(output_folder, exist_ok=True)
 
     # Iterate through each row in the DataFrame
-    for _, row in df[df.surface.notna() & df.smoothness.notna()].iterrows():
+    for _, row in df[df.surface.notna() & df.smoothness.notna() & df.nostreet.isna()].iterrows():
         input_img_folder = os.path.join(root_path, row["input_version"], "unsorted_images")
         
         # Create subfolder for surface if not exists
@@ -107,6 +107,8 @@ def create_image_folders(output_version, input_version, root_path):
             annotations = combined_annotations(path, iv, "V4")
         elif iv == "V5_c0":
             annotations = combined_annotations(path, iv, "majority_vote")
+        elif iv == "V10":
+            annotations = pd.read_csv(os.path.join(root_path, "V10", "metadata", "annotations_combined.csv"), dtype={"image_id": str}, index_col=False)
         else:
             annotations = combined_annotations(path, iv, "concat")
 
@@ -124,15 +126,15 @@ def create_image_folders(output_version, input_version, root_path):
     if output_version == "V7":
         all_annotations = all_annotations[all_annotations.surface == "asphalt"]
     
-    all_annotations.to_csv(os.path.join(root_path, output_version, "metadata", "annotations_combined.csv"))
+    all_annotations.to_csv(os.path.join(root_path, output_version, "metadata", "annotations_combined.csv"), index=False)
 
     # move images to folders
     create_annotated_image_folders(root_path, output_version, all_annotations)
 
 
 if __name__ == "__main__":
-    output_version = "V10"
-    input_versions = ["V4", "V5_c0", "V5_c1", "V5_c2", "V5_c3", "V5_c4", "V5_c5", "V5_c6", "V5_c7", "V9"]
+    output_version = "V11"
+    input_versions = ["V5_c8", "V10"]
     root_path = os.path.join("/", "Users", "alexandra", "Nextcloud-HTW", "SHARED", "SurfaceAI", "data", "mapillary_images", "training")
     create_image_folders(output_version, input_versions, root_path)
  
