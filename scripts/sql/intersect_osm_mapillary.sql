@@ -32,7 +32,6 @@ select distinct ways.*
 from ways
 JOIN way_nodes_selection ON ways.id = way_nodes_selection.way_id;
 
-
 create table way_geometry  as
 select id, ways_selection.tags->'surface' as surface, 
 ways_selection.tags ->'smoothness' as smoothness, 
@@ -46,14 +45,12 @@ ways_selection.tags -> 'cycleway:right:smoothness' as cycleway_right_smoothness,
 ways_selection.tags -> 'cycleway:left' as cycleway_left,
 ways_selection.tags -> 'cycleway:left:surface' as cycleway_left_surface,
 ways_selection.tags -> 'cycleway:left:smoothness' as cycleway_left_smoothness,
-(select st_transform(ST_LineFromMultiPoint( ST_Collect(ns.geom)), 3035)  AS geom
-from node_selection as ns join way_nodes_selection on ns.id=way_nodes_selection.node_id where way_nodes_selection.way_id=ways_selection.id ) 
+(select st_transform(ST_LineFromMultiPoint( ST_Collect(ns.geom order by wns.sequence_id)), 3035)  AS geom
+from node_selection as ns join way_nodes_selection as wns on ns.id=wns.node_id where wns.way_id=ways_selection.id)
 FROM ways_selection 
 where ways_selection.tags -> 'highway' <> '' and 
 (ways_selection.tags -> 'surface' <> '' or ways_selection.tags -> 'cycleway:surface' <> '' or ways_selection.tags -> 'cycleway:right:surface' <> '' or ways_selection.tags -> 'cycleway:left:surface' <> '') 
 and (ways_selection.tags -> 'smoothness' <> '' or ways_selection.tags -> 'cycleway:smoothness' <> '' or ways_selection.tags -> 'cycleway:right:smoothness' <> '' or ways_selection.tags -> 'cycleway:left:smoothness' <> '');
-
-
 
 
 -- cut off 10% of start and ends of roads --
