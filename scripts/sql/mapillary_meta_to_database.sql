@@ -28,6 +28,8 @@ ADD COLUMN cycleway_right_smoothness char(50),
 ADD COLUMN cycleway_left char(50),
 ADD COLUMN cycleway_left_surface char(50),
 ADD COLUMN cycleway_left_smoothness char(50),
+ADD COLUMN cycleway_both char(50),
+ADD COLUMN foot char(50),
 ADD COLUMN distance int,
 ADD COLUMN geom geometry(Point, 4326);
 
