@@ -14,14 +14,15 @@ zoom = 14
 image_size = "thumb_1024_url"
 
 # train data paramenters
-ds_version = "v5"
-max_img_per_sequence_train = 10
+ds_version = "v200"
+max_img_per_sequence_train = 5
 max_img_per_tile = 5
-tile_sample_size = 300
+tile_sample_size = 500
 min_images = 500
-min_tags = 50
+#min_tags = 50
+ds_tile_count = 5000
 
-imgs_per_class = 2000
+imgs_per_class = 2500
 
 # test data paramenters
 # timestamp filter 1.6.2021
@@ -47,19 +48,21 @@ chunk_ids = [2]
 # n_per_chunk = 100
 # TODO: standardize naming
 #model_prediction_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/{}/metadata/model_predictions_{}_c{}_predicted.csv"
-model_prediction_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/{}/metadata/"
+cloud_image_folder = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/"
+
+model_prediction_path = os.path.join(cloud_image_folder, "training", "{}", "metadata")
 model_prediction_file = {"v5c1": "model_predictions_V5_c1_predicted.csv",
                          "v5c2": "surface_prediction-V5_c2-20240215_143635.csv",
                          "v5c3": "surface_prediction-V5_c3-20240222_122429.csv",
                          "v5c4": "surface_prediction-V5_c4-20240226_150406.csv",
                          "v5c5": "surface_prediction-V5_c5-20240226_155720.csv",
                          "v5c6": "surface_prediction-V5_c6-20240305_171454.csv",
-                         "v5c7": "surface_prediction-V5_c7-20240306_100314.csv"}
+                         "v5c7": "surface_prediction-V5_c7-20240306_100314.csv",
+                         "v101": "effnet_surface_quality_prediction-V101_unsorted_images-20240513_005444.csv"}
 
-cloud_image_folder = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/"
 manual_added_images = os.path.join(cloud_image_folder, "training", "{}_c{}", "metadata", "incorrect_filtered_images.txt")
 labelstudio_absolute_path = "https://freemove.f4.htw-berlin.de/data/local-files/?d={}"
-labelstudio_predictions_path = os.path.join(cloud_image_folder, "training_data", "{}", "sample_predictions.json")
+labelstudio_predictions_path = os.path.join(cloud_image_folder, "training", "{}", "sample_predictions.json")
 # img ids that have previously already been labeled and should be excluded in further labeling to avoid redundant work
 labeled_imgids_path = os.path.join(data_folder, "labeled_imgids.txt")
 chunks_folder = os.path.join(data_folder, "{}", "chunks")

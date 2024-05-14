@@ -169,14 +169,13 @@ First test with Berlin data. See [script](https://github.com/SurfaceAI/internal_
 
 - sample from entire Germany.
 - sampling of train tiles:
-  - more than 500 img per tile
   - **300 tiles per surface/smoothness combination where according to OSM at least a certain amount of streets hold this tag combination** (threshold set based on median of respective count distribution)
 - Mapillary - OSM intersection: 
   - 10% cut off at intersections (start and end of roads)
   - distance < 2 meters - then take *closest* road to img, if img intersects with multiple roads, not *random* road
 - Filter images from intersected image pool:
-  - max 5 images per sequence
-  - **max 20 images per mercantile tile**
+  - max **10** images per sequence
+  - **max 5 images per mercantile tile**
   - no panorama images
   - filter, only relevant classes:
     - asphalt / concrete / paving_stones: excellent, good, intermediate, bad
@@ -221,3 +220,54 @@ All images in V9 are used as training data and then predicted. All images where 
 **V11**
 All images from V10 and additionally a **subset of 10% of all images that were filtered out (by the model) in previous steps** are labeled. We include this step in case there is a systematic bias of images that are excluded by the model.
 
+**V12**
+
+All images from V11. All **paving stones quality** images where prediction and true label deviate more than 1 are **revised** to catch annotation errors (36 quality classifications were adjusted, 4 surface classifications.)
+
+**V100**
+
+A new datapool similar to V5 is created as a base to sample more images of underrepresented images.
+
+Pre-selection of tiles:
+  - Tile selection based on OSM Tag pre-selection: 
+    - **600** tiles per **relevant** (asphalt - intermediate, bad; paving stones - excellent, intermediate, bad; sett - good; all concrete; all unpaved) surface/smoothness combination where according to OSM at least a certain amount of streets hold this tag combination
+    (threshold set based on median of respective count distribution)
+
+  - Filter images from intersected image pool:
+  - no panorama images
+  - filter, only relevant classes:
+    - asphalt / concrete / paving_stones: excellent, good, intermediate, bad
+    - sett: good, intermediate, bad
+    - unpaved: intermediate, bad, very_bad
+  - **Filter per surface/smoothness class**:
+    - max **5** images per sequence
+    - max 5 images per mercantile tile
+    - about **3000** images per class
+      - prefer pedestrian and cycleway: take 500 images for surface/smoothness classification only from highway type "pedestrian" and "cycleway" (if not as many available, take max. images available). Fill rest with remaining images. 
+
+  - c1: asphalt bad & intermediate (up to 2500 images per class)
+  - c2: paving stones excellent, intermediate, bad (up to 2500 images per class)
+
+
+**V5X**
+
+V5X creates a new metadata selection out of the v5 metadata pool. It thereby uses less strict restrictions:
+- sequence and tile ID is not limited globally to 5 anymore, but by surface/smoothness class
+- any image part of a sequence and tile that has not exhausted this restriction, will be considered a potential sample again
+- from potential images, samples are drawn such that each sequence and tile is "filled up" up to the limit of 5
+
+  - c1: asphalt bad (up to 2500 images per class)
+  - c2: paving stones excellent, intermediate, bad (up to 2500 images per class)
+
+**V101**
+
+Combination of V100 c1, c2 and V5X c1, c2.
+
+**V200**
+
+New datapool *without OSM based pre-selection*.
+
+- tile selection: 5000 tiles with at least 500 images, randomly drawn (can be same as V5 / V100)
+- random 20.000 images sampled
+  - max. 5 per tile
+  - max. 10 per sequence

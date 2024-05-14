@@ -31,13 +31,13 @@ def intersect_mapillary_osm():
             if (np.where(tile_ids.unique() == tile_id)[0][0] % 10) == 0:
                 print(np.where(tile_ids.unique() == tile_id)[0][0])
 
-            utils.intersect_mapillary_osm(tile_id, "mapillary_meta")
+            utils.intersect_mapillary_osm(tile_id, f"{config.ds_version}_mapillary_meta")
 
         end = time.time()
         print(f"{round((end-start) / 60)} mins to intersect all selected test tiles")
 
         utils.save_sql_table_to_csv(
-            "mapillary_meta",
+            f"{config.ds_version}_mapillary_meta",
             config.train_image_metadata_with_tags_path.format(config.ds_version),
         )
 

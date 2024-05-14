@@ -97,7 +97,7 @@ def create_annotated_image_folders(root_path, output_version, df):
 
 
 
-def create_image_folders(output_version, input_version, root_path):
+def create_image_folders(output_version, input_versions, root_path):
     all_annotations = pd.DataFrame()
     for iv in input_versions:
         # annotations for each version
@@ -131,10 +131,30 @@ def create_image_folders(output_version, input_version, root_path):
     # move images to folders
     create_annotated_image_folders(root_path, output_version, all_annotations)
 
+def update_labels(root_path, output_version, input_version, update_path):
+        annotations = pd.read_csv(os.path.join(root_path, input_version, "metadata", "annotations_combined.csv"), dtype={"image_id": str}, index_col=False)
+        annotations.sort_values("image_id", inplace=True)
+
+        update = pd.read_csv(update_path, dtype={"image_id": str}, index_col=False)
+        update["image_id"] = update.image.apply(lambda x: str.split(x, "/")[-1]).apply(lambda x: (str.split(x, ".jpg")[0]))
+        update.sort_values("image_id", inplace=True)
+
+        annotations.loc[annotations.image_id.isin(update.image_id), "nostreet"] = update["nostreet"].values
+        annotations.loc[annotations.image_id.isin(update.image_id), "surface"] = update["surface"].values
+        annotations.loc[annotations.image_id.isin(update.image_id), "smoothness"] = update["smoothness"].values
+
+        os.makedirs(os.path.join(root_path, output_version), exist_ok=True)
+        os.makedirs(os.path.join(root_path, output_version, "metadata"), exist_ok=True)
+        annotations.to_csv(os.path.join(root_path, output_version, "metadata", "annotations_combined.csv"), index=False)
+        create_annotated_image_folders(root_path, output_version, annotations)
+
 
 if __name__ == "__main__":
-    output_version = "V11"
-    input_versions = ["V5_c8", "V10"]
+    output_version = "V12"
+    input_versions = ["V11"]
     root_path = os.path.join("/", "Users", "alexandra", "Nextcloud-HTW", "SHARED", "SurfaceAI", "data", "mapillary_images", "training")
-    create_image_folders(output_version, input_versions, root_path)
+    #create_image_folders(output_version, input_versions, root_path)
+
+    update_path = os.path.join(root_path, "V11", "re-classify", "updated_pavingstones_annotations.csv")
+    update_labels(root_path, output_version, input_versions[0], update_path)
  

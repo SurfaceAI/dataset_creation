@@ -111,6 +111,10 @@ distance= mapillary_selection_labeled.distance
 FROM mapillary_selection_labeled
 WHERE {table_name}.id = mapillary_selection_labeled.id;
 
+drop table mapillary_selection;
+drop table mapillary_selection_labeled;
+
+
 
 -- ALTER TABLE {table_name}
 -- DROP COLUMN IF EXISTS surface,

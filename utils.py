@@ -206,7 +206,7 @@ def intersect_mapillary_osm(tile_id, table_name):
         query = file.read()
 
     query = query.format(
-        bbox0 = bbox[0], bbox1 = bbox[1], bbox2 = bbox[2], bbox3 = bbox[3], table_name=table_name
+        bbox0 = bbox[0], bbox1 = bbox[1], bbox2 = bbox[2], bbox3 = bbox[3], table_name=table_name,
     )
 
     # Connect to your PostgreSQL database

@@ -60,26 +60,28 @@ def download_training_images(chunk_ids=None, n_per_chunk=100, copy_existing=Fals
                 metadata = pd.read_csv(
                     config.train_image_selection_metadata_path.format(config.ds_version)
                 )
+
+            if not n_per_chunk is None:
                 chunk_ids = range(1, math.ceil(len(metadata) / n_per_chunk))
 
-            img_ids_to_download = []
-            for chunk_id in chunk_ids:
-                if chunk_id == 0:
-                    with open(config.interrater_reliability_img_ids_path.format(config.ds_version, "txt"), "r") as file:
-                        img_ids_to_download += [line.strip() for line in file.readlines()]
-                else:
-                    with open(config.chunk_img_ids_path.format(config.ds_version, chunk_id, "txt"), "r") as file:
-                        img_ids_to_download += [line.strip() for line in file.readlines()]
+                img_ids_to_download = []
+                for chunk_id in chunk_ids:
+                    if chunk_id == 0:
+                        with open(config.interrater_reliability_img_ids_path.format(config.ds_version, "txt"), "r") as file:
+                            img_ids_to_download += [line.strip() for line in file.readlines()]
+                    else:
+                        with open(config.chunk_img_ids_path.format(config.ds_version, chunk_id, "txt"), "r") as file:
+                            img_ids_to_download += [line.strip() for line in file.readlines()]
+            else:
+                img_ids_to_download = metadata["id"].tolist()
 
+            for i in range(0, len(img_ids_to_download)):
+                if i % 100 == 0:
+                    print(f"{i} images downloaded")
+                utils.download_image(img_ids_to_download[i], folder)
 
-
-                for i in range(0, len(img_ids_to_download)):
-                    if i % 100 == 0:
-                        print(f"{i} images downloaded")
-                    utils.download_image(img_ids_to_download[i], folder)
-
-                # remove broken images 
-                delete_broken_images(folder)
+            # remove broken images 
+            delete_broken_images(folder)
 
             print(f"{round((time.time()-start )/ 60)} mins to download all training images")
 
@@ -93,4 +95,7 @@ if __name__ == "__main__":
     #download_training_images([5], n_per_chunk=None)
     #download_training_images([6], n_per_chunk=None)
     #download_training_images([7], n_per_chunk=None)
-    download_training_images([8], n_per_chunk=None, copy_existing=True)
+    #download_training_images([8], n_per_chunk=None, copy_existing=True)
+    
+    #download_training_images([1, 2])
+    download_training_images(n_per_chunk=None)

@@ -12,6 +12,7 @@ import utils
 import config
 import constants as const
 
+
 # further filter image selection for training dataset
 def select_training_sample():
         metadata = pd.read_csv(
@@ -19,13 +20,14 @@ def select_training_sample():
         # drop potential duplicates
         metadata.drop_duplicates(subset="id", inplace=True)
 
-        metadata["month"] = pd.to_datetime(metadata["captured_at"], unit="ms").dt.month
-        metadata["hour"] = pd.to_datetime(metadata["captured_at"], unit="ms").dt.hour
+        #metadata["month"] = pd.to_datetime(metadata["captured_at"], unit="ms").dt.month
+        #metadata["hour"] = pd.to_datetime(metadata["captured_at"], unit="ms").dt.hour
         metadata = utils.clean_surface(metadata)
         
         metadata = utils.clean_smoothness(metadata)
 
         # drop surface specific smoothness
+        # TODO: neater way of implementing?
         cleaned_metadata = pd.DataFrame()
         for surface in config.surfaces:
             cleaned_metadata = pd.concat(
@@ -64,26 +66,42 @@ def select_training_sample():
 
         # filtering by max_img_per_sequence and max_img_per_tile reduces df from 13 mio to 50k images
         # sample x images per class
-        metadata = (
-            metadata.groupby(["sequence_id"])  # restrict number of images per sequence
-            .sample(config.max_img_per_sequence_train, random_state=1, replace=True)
-            .drop_duplicates(subset="id")
-            .groupby(["tile_id", "surface_clean", "smoothness_clean"])  # restrict number of images per tile (per class)
-            .sample(config.max_img_per_tile, random_state=1, replace=True)
-            .drop_duplicates(subset="id")
+        # metadata = (
+        #     metadata.groupby(["sequence_id"])  # restrict number of images per sequence
+        #     .sample(config.max_img_per_sequence_train, random_state=1, replace=True)
+        #     .drop_duplicates(subset="id")
+        #     .groupby(["tile_id", "surface_clean", "smoothness_clean"])  # restrict number of images per tile (per class)
+        #     .sample(config.max_img_per_tile, random_state=1, replace=True)
+        #     .drop_duplicates(subset="id")
 
-        )
+        # )
 
         # alle klassen,die noch nicht imgs_per_class haben, werden mit weiteren highways aufgefüllt
         # prefer pedastrian and cycleway
         metadata_selection = pd.DataFrame()
         for surface in config.surfaces:
             for smoothness in config.surf_smooth_comb[surface]:
-                metadata_temp = ((metadata.loc[
+                
+                metadata_class = metadata.loc[
                     (
-                        (metadata["surface_clean"] == surface)
+                          (metadata["surface_clean"] == surface)
                         & (metadata["smoothness_clean"] == smoothness)
-                        & (metadata["highway"].isin(["pedestrian", "cycleway"]))),])
+                )]
+
+                # sample by sequence_id and tile_id
+                metadata_class = (
+                    metadata_class.groupby(["sequence_id"])  # restrict number of images per sequence
+                    .sample(config.max_img_per_sequence_train, random_state=1, replace=True)
+                    .drop_duplicates(subset="id")
+                    .groupby(["tile_id", "surface_clean", "smoothness_clean"])  # restrict number of images per tile (per class)
+                    .sample(config.max_img_per_tile, random_state=1, replace=True)
+                    .drop_duplicates(subset="id")
+
+                )
+
+                # prefer pedestrian and cycleway, take sample of 500
+                metadata_temp = ((metadata_class.loc[
+                 (metadata_class["highway"].isin(["pedestrian", "cycleway"])),])
                 .groupby(["surface_clean", "smoothness_clean"])
                 .sample(500, random_state=1, replace=True)
                 .drop_duplicates(subset="id")
@@ -92,21 +110,21 @@ def select_training_sample():
                 n_missing_imgs = config.imgs_per_class - len(metadata_temp)
                 # fill up to imgs_per_class with other highways
                 metadata_fill_temp = (
-                    metadata.loc[
+                    metadata_class.loc[
                         (
-                            (~metadata.id.isin(metadata_temp.id))
-                            & (metadata["surface_clean"] == surface)
-                            & (metadata["smoothness_clean"] == smoothness),
+                            (~metadata_class["id"].isin(metadata_temp["id"]))
                         )
                     ]
                 )
+                # compute how many images are missing OR how many images are available 
+                # (otherwise, if a higher number than available is used in "sample", function gives an error)
                 n_missing_imgs = n_missing_imgs if n_missing_imgs < len(metadata_fill_temp) else len(metadata_fill_temp)
 
                 metadata_fill_temp = (metadata_fill_temp
                     .sample(n_missing_imgs, random_state=1)
-                    .drop_duplicates(subset="id")
                 )
 
+                # combine: selection from previous class, pedestrian/cycleway sample, other (filled up) sample
                 metadata_selection = pd.concat([metadata_selection, metadata_temp, metadata_fill_temp])
 
         metadata_selection.to_csv(
@@ -125,7 +143,7 @@ def create_chunks(chunk_ids, n_per_chunk=100, selected_surface=None, selected_sm
 
     metadata = (pd
                     .read_csv(config.train_image_selection_metadata_path.format(config.ds_version), dtype={"id": str})
-                    .sample(frac=1, random_state=1).reset_index(drop=True)
+                    .sample(frac=1, random_state=1).reset_index(drop=True) # make random order
                 )
 
     # chunk to get a share of filtered out images to counteract bias
@@ -167,9 +185,10 @@ def create_chunks(chunk_ids, n_per_chunk=100, selected_surface=None, selected_sm
             metadata = metadata[~metadata.id.isin(already_labled_ids)]
 
             # remove irr_chunk_ids from metadata
-            with open(config.interrater_reliability_img_ids_path.format(config.ds_version, "txt"), "r") as file:
-                img_ids_irr = [line.strip() for line in file.readlines()]
-            metadata = metadata.loc[(~metadata.id.isin(img_ids_irr)),:]
+            if os.path.exists(config.interrater_reliability_img_ids_path.format(config.ds_version, "txt")):
+                with open(config.interrater_reliability_img_ids_path.format(config.ds_version, "txt"), "r") as file:
+                    img_ids_irr = [line.strip() for line in file.readlines()]
+                metadata = metadata.loc[(~metadata.id.isin(img_ids_irr)),:]
 
             # remove images from previous chunks
             if min(chunk_ids) > 1:
@@ -237,6 +256,8 @@ def create_chunks(chunk_ids, n_per_chunk=100, selected_surface=None, selected_sm
             
      
 if __name__ == "__main__":
+
+    # v5
     #select_training_sample()
     #create_chunks([1], n_per_chunk=100)
     # chunk 2 only consists of asphalt intermediate and bad
@@ -252,4 +273,21 @@ if __name__ == "__main__":
     #create_chunks([7], n_per_chunk=None, selected_surface=[const.UNPAVED],
     #        selected_smoothness={const.VERY_BAD: 300, const.BAD: 50, const.INTERMEDIATE: 50})
     #create_chunks([8], n_per_chunk=None, filtered_out = True, filtered_out_perc=0.1)
-    create_chunks([9], n_per_chunk=None)
+    #create_chunks([9], n_per_chunk=None)
+    
+    # v100
+    # select_training_sample()
+    # create_chunks([1], n_per_chunk=None, selected_surface=[const.ASPHALT],
+    #               selected_smoothness={const.INTERMEDIATE: None, const.BAD: None})
+    # create_chunks([2], n_per_chunk=None, selected_surface=[const.PAVING_STONES],
+    #               selected_smoothness={const.EXCELLENT: None, const.INTERMEDIATE: None, const.BAD: None})
+    
+    # V101
+    # extra script: v101.py
+    create_chunks([1], n_per_chunk=None, selected_surface=[const.ASPHALT],
+                  selected_smoothness={const.INTERMEDIATE: None, const.BAD: None})
+    create_chunks([2], n_per_chunk=None, selected_surface=[const.PAVING_STONES],
+                  selected_smoothness={const.EXCELLENT: None, const.INTERMEDIATE: None, const.BAD: None})
+    
+    # V200
+    # extra script v200.py
