@@ -1,10 +1,10 @@
 import os
+# setting path
+import sys
+
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import DictCursor
-
-# setting path
-import sys
 
 sys.path.append("./")
 

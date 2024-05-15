@@ -4,12 +4,14 @@ import sys
 sys.path.append("mapillary")
 # sys.path.append('./')
 
-import pytest
-from mapillary import mapillary_detections
-from shapely import Polygon
-from PIL import Image, ImageDraw
-import numpy as np
 import os
+
+import numpy as np
+import pytest
+from PIL import Image, ImageDraw
+from shapely import Polygon
+
+from mapillary import mapillary_detections
 
 # # script path for mock functions
 # script_dir = os.path.dirname(os.path.realpath(__file__))

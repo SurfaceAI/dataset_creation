@@ -1,15 +1,17 @@
-import pandas as pd
-import numpy as np
-
+import json
+import math
 # setting path
 import os
 import sys
-import json
-import math
+from pathlib import Path
 
-sys.path.append("./")
+sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
+
+import numpy as np
+import pandas as pd
+
 import config
-import src.utils as utils
+import utils as utils
 
 
 def training_entity(row, img_folder):

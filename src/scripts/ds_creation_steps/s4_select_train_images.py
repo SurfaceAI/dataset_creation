@@ -1,16 +1,17 @@
-import pandas as pd
-import sys
-import os
 import math
+import os
 import random
+import sys
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 
-# setting path
-sys.path.append("./")
+sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
 
-import src.utils as utils
 import config
 import constants as const
+import utils as utils
 
 
 # further filter image selection for training dataset

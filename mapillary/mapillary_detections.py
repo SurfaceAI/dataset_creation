@@ -1,13 +1,12 @@
-from road_types import road_types, RoadTypes
-import mapillary_requests
+import base64
 
 import mapbox_vector_tile
-import base64
+import mapillary_requests
+import numpy as np
+from PIL import Image, ImageDraw
+from road_types import RoadTypes, road_types
 from shapely import Polygon
 from shapely.ops import unary_union
-from PIL import Image, ImageDraw
-import numpy as np
-
 
 ### helper functions, general pre- and post calculations and transformations
 

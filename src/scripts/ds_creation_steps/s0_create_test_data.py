@@ -1,27 +1,24 @@
-import os
-import time
 import csv
+import os
+import sys
+import time
+from pathlib import Path
+
+import geopandas as gpd
+import pandas as pd
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import DictCursor
-
-import pandas as pd
-import geopandas as gpd
+from s6_prepare_manual_annotation import create_labelstudio_input_file
 from shapely.geometry import Point
 
-import sys
+sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
 
-from s6_prepare_manual_annotation import create_labelstudio_input_file
-
-# setting path
-sys.path.append("./")
-sys.path.append("../")
-
-import src.utils as utils
 import config
 import constants as const
+import database_credentials as db
 import raster_functions as rf
-import src.database_credentials as db
+import utils as utils
 
 
 def get_autonahn_in_boundary(city, boundary):

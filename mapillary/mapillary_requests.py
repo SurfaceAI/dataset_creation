@@ -1,10 +1,11 @@
+import os
+from io import BytesIO
+from pathlib import Path
+
 import mercantile
 import requests
-from vt2geojson.tools import vt_bytes_to_geojson
 from PIL import Image
-from io import BytesIO
-import os
-from pathlib import Path
+from vt2geojson.tools import vt_bytes_to_geojson
 
 ROOT_DIR = Path(__file__).parent.parent
 

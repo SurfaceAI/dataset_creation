@@ -4,9 +4,9 @@ from pathlib import Path
 
 sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
 
-import config
-
 import pandas as pd
+
+import config
 
 #### query metadata of x random tiles (at least x images per tile) ###
 # > s1

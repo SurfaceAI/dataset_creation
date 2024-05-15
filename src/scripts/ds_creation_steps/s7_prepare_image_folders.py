@@ -1,6 +1,7 @@
 import os
-import pandas as pd
 import shutil
+
+import pandas as pd
 
 # This script combines all annotated images from different versions and creates folders for the images
 

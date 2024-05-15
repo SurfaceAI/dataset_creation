@@ -4,6 +4,7 @@ import sys
 sys.path.append("mapillary")
 
 import pytest
+
 from mapillary.road_types import road_types
 
 

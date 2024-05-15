@@ -1,21 +1,18 @@
+import math
 import os
+import shutil
+import sys
 import time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
-import sys
-import shutil
-import math
-
 from PIL import Image
 
-# setting path
-sys.path.append("./")
-sys.path.append("../")
+sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
 
-import src.utils as utils
 import config
+import utils as utils
 
 
 def delete_broken_images(folder_path, threshold_size_kb=1):

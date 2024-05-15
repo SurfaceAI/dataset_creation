@@ -1,12 +1,12 @@
 import os
+import shutil
 import sys
 from pathlib import Path
 
-import shutil
 import pandas as pd
 from tqdm import tqdm
 
-sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent))
+sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
 
 import config
 

@@ -4,18 +4,16 @@ from pathlib import Path
 
 sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent))
 
-import constants as const
-import config
+from ds_creation_steps import s1_select_train_tiles as s1
+from ds_creation_steps import s2_get_train_tiles_metadata as s2
+from ds_creation_steps import s3_intersect_mapillary_osm as s3
+from ds_creation_steps import s4_select_train_images as s4
+from ds_creation_steps import s5_download_train_images as s5
+from ds_creation_steps import s6_prepare_manual_annotation as s6
+from ds_creation_steps import s7_prepare_image_folders as s7
 
-from ds_creation_steps import (
-    s1_select_train_tiles as s1,
-    s2_get_train_tiles_metadata as s2,
-    s3_intersect_mapillary_osm as s3,
-    s4_select_train_images as s4,
-    s5_download_train_images as s5,
-    s6_prepare_manual_annotation as s6,
-    s7_prepare_image_folders as s7,
-)
+import config
+import constants as const
 
 # the selection of images is based on a selection of mercantile tiles (Zoom14).
 # First, tiles are selected, then, from within the tiles, images are selected.

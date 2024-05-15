@@ -1,16 +1,15 @@
+import os
+import sys
 import time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-import sys
+sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
 
-# setting path
-sys.path.append("./")
-sys.path.append("../")
-
-import src.utils as utils
 import config
+import utils as utils
 
 
 def intersect_mapillary_osm():

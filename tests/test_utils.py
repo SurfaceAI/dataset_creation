@@ -1,8 +1,8 @@
-import pytest
+import sys
+
 import mercantile
 import pandas as pd
-
-import sys
+import pytest
 
 # setting path
 sys.path.append("./")

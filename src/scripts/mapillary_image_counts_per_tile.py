@@ -1,17 +1,19 @@
 ## create csv with number of mapillary images for each tile in given bounding box
-import sys
-import time
 import concurrent.futures
 import csv
+import os
+import sys
+import time
+from pathlib import Path
+
 import mercantile
 
-# setting path
-sys.path.append("./")
+sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
 
 # importing
 import config
 import constants as const
-import src.utils as utils
+import utils as utils
 
 tiles = []
 

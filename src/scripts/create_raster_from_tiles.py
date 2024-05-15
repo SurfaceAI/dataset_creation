@@ -1,15 +1,17 @@
-import pandas as pd
-import numpy as np
-from shapely.geometry import Point
-import geopandas as gpd
-
 # setting path
+import os
 import sys
+from pathlib import Path
 
-sys.path.append("./")
+import geopandas as gpd
+import numpy as np
+import pandas as pd
+from shapely.geometry import Point
 
-import src.utils as utils
+sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
+
 import raster_functions as rf
+import utils as utils
 
 #### create a mercantile tile raster template based on dataset with tile coordinates
 # create a template raster with empty values

@@ -1,14 +1,12 @@
-from PIL import Image
-import numpy as np
-import mercantile
-
-import rasterio
-from rasterio.transform import from_origin
-from rasterio.features import rasterize
-import rasterstats
-
-import pandas as pd
 import geopandas as gpd
+import mercantile
+import numpy as np
+import pandas as pd
+import rasterio
+import rasterstats
+from PIL import Image
+from rasterio.features import rasterize
+from rasterio.transform import from_origin
 
 import config
 

@@ -5,14 +5,15 @@ from pathlib import Path
 sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
 
 import random
-import pandas as pd
 
-import scripts.osm_tag_counts_as_raster as otag
-from scripts.mapillary_image_counts_per_tile import mapillary_image_counts_per_tile
+import pandas as pd
 
 import config
 import constants as const
 import raster_functions as rf
+import scripts.osm_tag_counts_as_raster as otag
+from scripts.mapillary_image_counts_per_tile import \
+    mapillary_image_counts_per_tile
 
 
 def select_train_tiles(

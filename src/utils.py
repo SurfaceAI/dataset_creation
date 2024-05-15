@@ -5,25 +5,23 @@ from pathlib import Path
 sys.path.append(str(Path(os.path.abspath(__file__)).parent))
 
 import csv
-import mercantile
 
-import requests
-from vt2geojson.tools import vt_bytes_to_geojson
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import mercantile
+import numpy as np
+import pandas as pd
 import psycopg2
+import requests
+from PIL import Image
 from psycopg2 import sql
 from psycopg2.extras import DictCursor
-import pandas as pd
-import geopandas as gpd
 from shapely.geometry import Point
+from vt2geojson.tools import vt_bytes_to_geojson
 
-import matplotlib.pyplot as plt
-from PIL import Image
-import numpy as np
-
-
-import database_credentials as db
-import constants as const
 import config as config
+import constants as const
+import database_credentials as db
 
 # set access tokens
 with open(config.token_path, "r") as file:

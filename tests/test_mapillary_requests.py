@@ -4,10 +4,11 @@ import sys
 sys.path.append("mapillary")
 sys.path.append("./")
 
-import pytest
 import mercantile
+import pytest
 import requests
 from vt2geojson.tools import vt_bytes_to_geojson
+
 from mapillary import mapillary_requests
 
 

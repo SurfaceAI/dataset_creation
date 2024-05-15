@@ -1,12 +1,13 @@
 import os
-import sys
 import shutil
+import sys
+
 import pandas as pd
+from s6_prepare_manual_annotation import create_labelstudio_input_file
 
 ## create new labelstudio file for all images that are misclassified in V9 by the model to check for annotation errors
 ## This will contribute to V10
 
-from s6_prepare_manual_annotation import create_labelstudio_input_file
 
 sys.path.append("./")
 sys.path.append("../")
