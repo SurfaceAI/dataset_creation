@@ -12,6 +12,7 @@ import geopandas as gpd
 
 import config
 
+
 def read_raster(raster_path):
     """read raster image from path and return values as numpy array
 
@@ -26,27 +27,27 @@ def read_raster(raster_path):
     return np.array(im)
 
 
-
-def create_raster(xmin, xmax, ymin, ymax, crs, output_path, nrows=False, ncols=False, resolution=False):
+def create_raster(
+    xmin, xmax, ymin, ymax, crs, output_path, nrows=False, ncols=False, resolution=False
+):
     """create raster based on bounding box coordinates, crs, output_path, and either nrows, ncols, or resolution.
-        Args:
-            xmin (float): xmin coordinate of bounding box (in given CRS)
-            xmax (float): xmax coordinate of bounding box (in given CRS)
-            ymin (float): ymin coordinate of bounding box (in given CRS)
-            ymax (float): ymax coordinate of bounding box (in given CRS)
-            crs (str): crs of target raster in format 'epsg:xxxx'
-            output_path (str): path to save raster to
-            nrows (int, optional): number of rows of target raster. Defaults to False.
-            ncols (int, optional): number of columns of target raster. Defaults to False.
-            resolution (int, optional): resolution in unit of target CRS. Either use resolution OR nrows&ncols. Defaults to False.
-        """
+    Args:
+        xmin (float): xmin coordinate of bounding box (in given CRS)
+        xmax (float): xmax coordinate of bounding box (in given CRS)
+        ymin (float): ymin coordinate of bounding box (in given CRS)
+        ymax (float): ymax coordinate of bounding box (in given CRS)
+        crs (str): crs of target raster in format 'epsg:xxxx'
+        output_path (str): path to save raster to
+        nrows (int, optional): number of rows of target raster. Defaults to False.
+        ncols (int, optional): number of columns of target raster. Defaults to False.
+        resolution (int, optional): resolution in unit of target CRS. Either use resolution OR nrows&ncols. Defaults to False.
+    """
 
     if nrows and ncols:
-
         # Calculate cell size
         cell_size_x = (xmax - xmin) / ncols
         cell_size_y = (ymax - ymin) / nrows
-        
+
         # Define transform
         transform = from_origin(xmin, ymax, cell_size_x, cell_size_y)
 
@@ -54,28 +55,26 @@ def create_raster(xmin, xmax, ymin, ymax, crs, output_path, nrows=False, ncols=F
         # Calculate number of columns and rows
         ncols = int((xmax - xmin) / resolution)
         nrows = int((ymax - ymin) / resolution)
-        
+
         # Define transform
         transform = from_origin(xmin, ymax, resolution, resolution)
-    
 
     if nrows and ncols:
         # Create raster
-        dsw =  rasterio.open(
+        dsw = rasterio.open(
             output_path,
-            'w',
-            driver='GTiff',
+            "w",
+            driver="GTiff",
             height=nrows,
             width=ncols,
             count=1,
-            dtype='float32',
+            dtype="float32",
             crs=crs,
-            transform=transform
-        ) 
+            transform=transform,
+        )
         dsw.close()
     else:
         print("either nrows and ncols or resolution must be specified")
-
 
 
 def raster_to_tiledf(raster_path):
@@ -97,17 +96,17 @@ def raster_to_tiledf(raster_path):
         xs = np.array(xs).flatten()
         ys = np.array(ys).flatten()
         df = gpd.GeoDataFrame(
-            {
-                "osmtag_count": band1.flatten()
-            }, geometry=gpd.points_from_xy(xs, ys), crs=src.crs
+            {"osmtag_count": band1.flatten()},
+            geometry=gpd.points_from_xy(xs, ys),
+            crs=src.crs,
         )
         # Convert geometry to lat/lon
-        df = df.to_crs('EPSG:4326')
+        df = df.to_crs("EPSG:4326")
         # Extract lat and lon
-        df['lon'] = df.geometry.x
-        df['lat'] = df.geometry.y
+        df["lon"] = df.geometry.x
+        df["lat"] = df.geometry.y
         # Drop geometry column and convert to pd.DataFrame
-        df.drop(columns='geometry', inplace=True)
+        df.drop(columns="geometry", inplace=True)
         df = pd.DataFrame(df)
         # Convert NaNs to zeros
         df.fillna(0, inplace=True)
@@ -123,7 +122,6 @@ def raster_to_tiledf(raster_path):
         return df
 
 
-
 def rasterize_points(raster_path, data_path, crs, output_path, fun="max"):
     """Create and store a raster from a csv point dataset, where each point represents one raster centroid and the value "image_count" the respective value to create a raster from.
     Currently 'image_count' is the hardcoded field name which is expected in the dataset.
@@ -135,50 +133,55 @@ def rasterize_points(raster_path, data_path, crs, output_path, fun="max"):
         output_path (str): path to save raster to (.tif)
         fun (str, optional): function to apply to rasterize points. Defaults to "max".
     """
-        # Read raster template
+    # Read raster template
     with rasterio.open(raster_path) as src:
-        
         # Read data points
         data = pd.read_csv(data_path)
-        data = gpd.GeoDataFrame(data, geometry=gpd.points_from_xy(data["lon"], data["lat"]), crs=4326)
+        data = gpd.GeoDataFrame(
+            data, geometry=gpd.points_from_xy(data["lon"], data["lat"]), crs=4326
+        )
         # Reproject if needed
         if data.crs != crs:
             data = data.to_crs(crs)
-        
+
         # Rasterize based on the function
         if fun == "max":
-            agg_func = rasterio.enums.MergeAlg.replace # TODO: max not inplemented in rasterio?
+            agg_func = (
+                rasterio.enums.MergeAlg.replace
+            )  # TODO: max not inplemented in rasterio?
         elif fun == "sum":
             agg_func = rasterio.enums.MergeAlg.add
         else:
             raise ValueError("fun must be either 'max' or 'sum'")
-        
+
         shape = src.shape
         data = data.reset_index(drop=True)
-        geom_value = ((geom,value) for geom, value in zip(data.geometry, data['image_count']))
+        geom_value = (
+            (geom, value) for geom, value in zip(data.geometry, data["image_count"])
+        )
 
         # Create rasterized array
         rasterized = rasterize(
             geom_value,
             out_shape=shape,
-            transform= src.transform,
+            transform=src.transform,
             all_touched=True,
             default_value=0,
-            dtype = src.dtypes[0],
-            merge_alg= agg_func
+            dtype=src.dtypes[0],
+            merge_alg=agg_func,
         )
 
         # Write raster
         with rasterio.open(
             output_path,
-            'w',
-            driver='GTiff',
+            "w",
+            driver="GTiff",
             height=shape[0],
             width=shape[1],
             count=1,
             dtype=src.dtypes[0],
             crs=crs,
-            transform= src.transform,
+            transform=src.transform,
         ) as dst:
             dst.write(rasterized, 1)
 
@@ -198,24 +201,27 @@ def raster_ids_for_points(raster_path, data_path, output_path, crs):
         bnd = src.read(1)
         # Read data points
         data = pd.read_csv(data_path)
-        data = gpd.GeoDataFrame(data, geometry=gpd.points_from_xy(data["lon"], data["lat"]), crs=4326)
+        data = gpd.GeoDataFrame(
+            data, geometry=gpd.points_from_xy(data["lon"], data["lat"]), crs=4326
+        )
         # Reproject if needed
         if data.crs != crs:
             data = data.to_crs(crs)
-        
-        # Extract raster cell_id for each point
-        data['cell_ids'] = rasterstats.point_query(
-            data, 
-            np.arange(0, bnd.shape[0]*bnd.shape[1]).reshape(bnd.shape[0], bnd.shape[1]),
-            nodata = None, 
-            affine = src.transform,
-            interpolate='nearest'
-        )
-        
-        # Add columns for lat and lon
-        data['lon'] = data.geometry.x
-        data['lat'] = data.geometry.y
-        
-        # Write to CSV
-        data[['cell_ids', 'lon', 'lat']].to_csv(output_path, index=False)
 
+        # Extract raster cell_id for each point
+        data["cell_ids"] = rasterstats.point_query(
+            data,
+            np.arange(0, bnd.shape[0] * bnd.shape[1]).reshape(
+                bnd.shape[0], bnd.shape[1]
+            ),
+            nodata=None,
+            affine=src.transform,
+            interpolate="nearest",
+        )
+
+        # Add columns for lat and lon
+        data["lon"] = data.geometry.x
+        data["lat"] = data.geometry.y
+
+        # Write to CSV
+        data[["cell_ids", "lon", "lat"]].to_csv(output_path, index=False)

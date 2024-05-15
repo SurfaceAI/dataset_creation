@@ -1,7 +1,7 @@
-
 import os
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent))
 
 import constants as const
@@ -14,8 +14,9 @@ from ds_creation_steps import (
     s4_select_train_images as s4,
     s5_download_train_images as s5,
     s6_prepare_manual_annotation as s6,
-    s7_prepare_image_folders as s7
+    s7_prepare_image_folders as s7,
 )
+
 # the selection of images is based on a selection of mercantile tiles (Zoom14).
 # First, tiles are selected, then, from within the tiles, images are selected.
 

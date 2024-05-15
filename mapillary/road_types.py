@@ -5,22 +5,27 @@
 #     BIKE = auto() # cycle
 #     PEDESTRIAN = auto() # foot
 
-class RoadTypes():
-    car = 'car'
-    bike = 'bike'
-    pedestrian = 'pedestrian'
+
+class RoadTypes:
+    car = "car"
+    bike = "bike"
+    pedestrian = "pedestrian"
+
 
 road_types = {
     RoadTypes.car: {
-        'detections': ['construction--flat--road',
-                       ],
+        "detections": [
+            "construction--flat--road",
+        ],
     },
     RoadTypes.bike: {
-        'detections': ['construction--flat--bike-lane',
-                       ],
+        "detections": [
+            "construction--flat--bike-lane",
+        ],
     },
     RoadTypes.pedestrian: {
-        'detections': ['construction--flat--sidewalk',
-                       ],
+        "detections": [
+            "construction--flat--sidewalk",
+        ],
     },
 }

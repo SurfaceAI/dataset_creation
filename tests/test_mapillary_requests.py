@@ -1,28 +1,32 @@
 import sys
+
 # setting path
-sys.path.append('mapillary')
-sys.path.append('./')
+sys.path.append("mapillary")
+sys.path.append("./")
 
 import pytest
 import mercantile
 import requests
 from vt2geojson.tools import vt_bytes_to_geojson
-from mapillary import mapillary_requests 
+from mapillary import mapillary_requests
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def token_path():
-    return 'mapillary_token.txt'
+    return "mapillary_token.txt"
+
 
 # load mapillary access token
 def test_load_mapillary_token(token_path):
-
     access_token = mapillary_requests.load_mapillary_token(token_path=token_path)
 
-    assert access_token.startswith('MLY|')
+    assert access_token.startswith("MLY|")
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def access_token(token_path):
     return mapillary_requests.load_mapillary_token(token_path=token_path)
+
 
 # TODO:
 ### request mapillary data from vector tiles endpoint
@@ -55,47 +59,55 @@ def access_token(token_path):
 #     return feature["geometry"]["coordinates"]
 
 
-
 ### request mapillary data from image endpoint
 
 # request metadata for a single image
 
+
 class TestRequestImageDataFromImageEntity:
-
     def test_simple_request(self, access_token):
-        image_id = '109662244529983'
+        image_id = "109662244529983"
 
-        data = mapillary_requests.request_image_data_from_image_entity(image_id, access_token)
+        data = mapillary_requests.request_image_data_from_image_entity(
+            image_id, access_token
+        )
 
-        assert 'id' in data
-        assert data['id'] == image_id
-        assert 'thumb_1024_url' in data
-        assert 'detections' in data
+        assert "id" in data
+        assert data["id"] == image_id
+        assert "thumb_1024_url" in data
+        assert "detections" in data
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def image_data(access_token):
-    image_id = '109662244529983'
-    data = mapillary_requests.request_image_data_from_image_entity(image_id, access_token)
+    image_id = "109662244529983"
+    data = mapillary_requests.request_image_data_from_image_entity(
+        image_id, access_token
+    )
     return data
 
+
 # extract image detections from image data
+
 
 def test_extract_detections_from_image(image_data):
     detections = mapillary_requests.extract_detections_from_image(image_data)
 
     assert isinstance(detections, list)
-    assert all(key in detections[0] for key in ('value', 'geometry', 'created_at', 'id'))
+    assert all(
+        key in detections[0] for key in ("value", "geometry", "created_at", "id")
+    )
+
 
 # extract image url from image data
 def test_extract_url_from_image(image_data):
     url = mapillary_requests.extract_url_from_image(image_data)
 
-    assert url.startswith('https')
-    
+    assert url.startswith("https")
+
+
 def test_download_image(image_data):
     url = mapillary_requests.extract_url_from_image(image_data)
     image_raw = mapillary_requests.download_image(url)
 
     assert isinstance(image_raw, (bytes, bytearray))
-

@@ -15,6 +15,7 @@ import src.utils as utils
 
 tiles = []
 
+
 def counts_per_tile(tile):
     tile_no = tiles.index(tile)
     if tile_no % 10 == 0:
@@ -23,7 +24,8 @@ def counts_per_tile(tile):
     data = utils.get_tile_images(tile)
     return len(data["features"])
 
-def mapillary_image_counts_per_tile(out_path, bbox, num_threads = 8):
+
+def mapillary_image_counts_per_tile(out_path, bbox, num_threads=8):
     global tiles
     start = time.time()
     tiles = list(mercantile.tiles(bbox[0], bbox[1], bbox[2], bbox[3], config.zoom))

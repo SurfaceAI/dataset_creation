@@ -12,6 +12,7 @@ from shapely.geometry import Point
 import sys
 
 from s6_prepare_manual_annotation import create_labelstudio_input_file
+
 # setting path
 sys.path.append("./")
 sys.path.append("../")
@@ -43,20 +44,24 @@ def get_autonahn_in_boundary(city, boundary):
 
 
 def select_test_images(city, boundary, center_bbox):
-    metadata = pd.read_csv(config.test_tiles_metadata_path.format(city), dtype={"id": int})
+    metadata = pd.read_csv(
+        config.test_tiles_metadata_path.format(city), dtype={"id": int}
+    )
 
     # select only images from city center
-    metadata = metadata[(metadata.lon > center_bbox["xmin"]) & 
-                        (metadata.lon < center_bbox["xmax"]) & 
-                        (metadata.lat > center_bbox["ymin"]) & 
-                        (metadata.lat < center_bbox["ymax"])]
-    
+    metadata = metadata[
+        (metadata.lon > center_bbox["xmin"])
+        & (metadata.lon < center_bbox["xmax"])
+        & (metadata.lat > center_bbox["ymin"])
+        & (metadata.lat < center_bbox["ymax"])
+    ]
+
     # remove panorama img
     metadata = metadata[metadata["is_pano"] == False]
 
     # only images after defined timestamp
     metadata = metadata[metadata["captured_at"] >= config.time_filter_unix]
-    
+
     # to get max diversity of images:
     # take max 5 images per sequence
     # take max 5 images per 100 meter raster cell
@@ -80,26 +85,20 @@ def select_test_images(city, boundary, center_bbox):
     # remove images on the autobahn
     autobahn_in_boundary = get_autonahn_in_boundary(city, boundary)
 
-
     pts = gpd.GeoDataFrame(
         metadata,
         geometry=[
-            Point(lon, lat)
-            for lon, lat in zip(metadata["lon"], metadata["lat"])
+            Point(lon, lat) for lon, lat in zip(metadata["lon"], metadata["lat"])
         ],
         crs="EPSG:4326",
     )
     pts = pts.to_crs("EPSG:3035")
-    metadata = metadata[
-        ~pts.geometry.intersects(autobahn_in_boundary.unary_union)
-    ]
+    metadata = metadata[~pts.geometry.intersects(autobahn_in_boundary.unary_union)]
 
     # sample remaining
     metadata = metadata.sample(config.sample_size_test_city, random_state=1)
 
-    metadata.to_csv(
-        config.test_image_selection_metadata_path.format(city), index=False
-    )
+    metadata.to_csv(config.test_image_selection_metadata_path.format(city), index=False)
 
 
 def download_test_images(city):
@@ -134,16 +133,20 @@ def intersect_test_images_with_osm(city):
 
     # Execute the intersection query
     temp_path = "data/temp.csv"
-    image_selection = pd.read_csv(config.test_image_selection_metadata_path.format(city))
+    image_selection = pd.read_csv(
+        config.test_image_selection_metadata_path.format(city)
+    )
     image_selection.drop(columns=["cell_ids"]).to_csv(temp_path, index=False)
 
     absolute_path = os.path.join(os.getcwd(), temp_path)
     with conn.cursor(cursor_factory=DictCursor) as cursor:
-        cursor.execute(sql.SQL(
-                    query.format(
-                        table_name="mapillary_testdata_meta", absolute_path=absolute_path
-                    )
-                ))
+        cursor.execute(
+            sql.SQL(
+                query.format(
+                    table_name="mapillary_testdata_meta", absolute_path=absolute_path
+                )
+            )
+        )
         conn.commit()
     conn.close()
     os.remove(absolute_path)
@@ -157,9 +160,7 @@ def intersect_test_images_with_osm(city):
         utils.intersect_mapillary_osm(tile_id, "mapillary_testdata_meta")
 
     end = time.time()
-    print(
-        f"{round((end-start) / 60)} mins to intersect all selected test tiles"
-    )
+    print(f"{round((end-start) / 60)} mins to intersect all selected test tiles")
 
     utils.save_sql_table_to_csv(
         "mapillary_testdata_meta",
@@ -192,28 +193,28 @@ def raster_id_by_res(boundary, resolution, output_file_path, city):
 
 if __name__ == "__main__":
     cities = [
-        #const.COLOGNE,
+        # const.COLOGNE,
         const.MUNICH,
-        #const.DRESDEN,
-        #const.HEILBRONN,
-        #const.LUNENBURG,
+        # const.DRESDEN,
+        # const.HEILBRONN,
+        # const.LUNENBURG,
     ]
 
     for city in cities:
         print("city: ", city)
         boundary = gpd.read_file(config.boundary.format(city), crs="EPSG:4326")
-    
+
         # Step 0_0: get all tiles within city boundary and write to csv
-        #utils.write_tiles_within_boundary(config.test_city_tiles_path.format(city), boundary)
-    
+        # utils.write_tiles_within_boundary(config.test_city_tiles_path.format(city), boundary)
+
         # Step 0_1: get metadata for all images within city boundary
-        #tiles = pd.read_csv(config.test_city_tiles_path.format(city))
-        #utils.query_and_write_img_metadata(
+        # tiles = pd.read_csv(config.test_city_tiles_path.format(city))
+        # utils.query_and_write_img_metadata(
         #    tiles, config.test_tiles_metadata_path.format(city)
-        #)
-    
+        # )
+
         # Step 0_2: create samll raster template for city
-        #raster_id_by_res(boundary, 100, config.test_small_raster_template.format(city), city)
+        # raster_id_by_res(boundary, 100, config.test_small_raster_template.format(city), city)
 
         # Step 0_3: select images for test data
         select_test_images(city, boundary, config.center_bboxes[city])
@@ -228,4 +229,9 @@ if __name__ == "__main__":
         metadata = pd.read_csv(config.test_image_metadata_with_tags_path.format(city))
         metadata = utils.clean_surface(metadata)
         metadata = utils.clean_smoothness(metadata)
-        create_labelstudio_input_file(metadata, is_testdata=True, output_path=config.test_labelstudio_input_path.format(city), test_city=city)
+        create_labelstudio_input_file(
+            metadata,
+            is_testdata=True,
+            output_path=config.test_labelstudio_input_path.format(city),
+            test_city=city,
+        )

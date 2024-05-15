@@ -12,6 +12,7 @@ sys.path.append("./")
 import config
 import src.database_credentials as db
 
+
 def create_osm_tag_count_tif(surface, smoothness):
     # Connect to your PostgreSQL database
     conn = psycopg2.connect(
@@ -34,7 +35,9 @@ def create_osm_tag_count_tif(surface, smoothness):
         )
 
         # run query for surface
-        query = query_template.format(surface=surface, smoothness=smoothness, raster_name=raster_name)
+        query = query_template.format(
+            surface=surface, smoothness=smoothness, raster_name=raster_name
+        )
         cursor.execute(sql.SQL(query))
         conn.commit()
 
@@ -59,7 +62,9 @@ def create_osm_tag_count_tif(surface, smoothness):
         # Save the GeoTIFF to a file
         if result:
             raster_data = result["raster_data"].tobytes()
-            with open(config.surf_smooth_tag_counts_path.format(surface, smoothness), "wb") as tiff_file:
+            with open(
+                config.surf_smooth_tag_counts_path.format(surface, smoothness), "wb"
+            ) as tiff_file:
                 tiff_file.write(raster_data)
 
     # Close the database connection

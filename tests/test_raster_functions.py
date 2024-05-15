@@ -16,15 +16,11 @@ def test_read_raster():
 
 
 def test_create_raster():
-    rf.create_rasterPY(
-        0, 1, 0, 1, 4326, "./tests/test_output1.tif", nrows=10, ncols=10
-    )
+    rf.create_rasterPY(0, 1, 0, 1, 4326, "./tests/test_output1.tif", nrows=10, ncols=10)
     assert os.path.exists("./tests/test_output1.tif")
     os.remove("./tests/test_output1.tif")
 
-    rf.create_rasterPY(
-        0, 1, 0, 1, 4326, "./tests/test_output2.tif", resolution=0.1
-    )
+    rf.create_rasterPY(0, 1, 0, 1, 4326, "./tests/test_output2.tif", resolution=0.1)
     assert os.path.exists("./tests/test_output2.tif")
     os.remove("./tests/test_output2.tif")
 

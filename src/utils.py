@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(os.path.abspath(__file__)).parent))
 
 import csv
@@ -188,9 +189,7 @@ def query_and_write_img_metadata(tiles, out_path):
         for i in range(0, len(tiles)):
             if i % 10 == 0:
                 print(f"{i} tiles of {len(tiles)}")
-            tile = tiles.iloc[
-                i,
-            ]
+            tile = tiles.iloc[i,]
             header, output = get_images_metadata(tile)
             if i == 0:
                 csvwriter.writerow(header)
@@ -215,7 +214,11 @@ def intersect_mapillary_osm(tile_id, table_name):
         query = file.read()
 
     query = query.format(
-        bbox0 = bbox[0], bbox1 = bbox[1], bbox2 = bbox[2], bbox3 = bbox[3], table_name=table_name,
+        bbox0=bbox[0],
+        bbox1=bbox[1],
+        bbox2=bbox[2],
+        bbox3=bbox[3],
+        table_name=table_name,
     )
 
     # Connect to your PostgreSQL database
@@ -281,7 +284,7 @@ def save_sql_table_to_csv(
             sql.SQL(
                 query.format(
                     table_name=table_name,
-                    columns=','.join(columns),
+                    columns=",".join(columns),
                     where_clause=where_clause,
                     absolute_path=absolute_path,
                 )
@@ -318,8 +321,11 @@ def clean_smoothness(metadata):
         const.VERY_BAD,
     )
 
-    metadata["smoothness_clean"] = metadata["smoothness_clean"].replace(["perfect", "very_good"], const.EXCELLENT)
+    metadata["smoothness_clean"] = metadata["smoothness_clean"].replace(
+        ["perfect", "very_good"], const.EXCELLENT
+    )
     return metadata
+
 
 def clean_surface(metadata):
     """Clean surface column of metadata dataframe according to defined OSM surface values
@@ -354,25 +360,18 @@ def clean_surface(metadata):
 
 
 def write_tiles_within_boundary(csv_path, boundary):
-            
     bbox = boundary.total_bounds
 
     tiles = list()
-    tiles += list(
-        mercantile.tiles(bbox[0], bbox[1], bbox[2], bbox[3], config.zoom)
-    )
+    tiles += list(mercantile.tiles(bbox[0], bbox[1], bbox[2], bbox[3], config.zoom))
 
-    with open(
-        csv_path, "w", newline=""
-    ) as csvfile:
+    with open(csv_path, "w", newline="") as csvfile:
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(["x", "y", "z", "lat", "lon"])
         for i in range(0, len(tiles)):
             tile = tiles[i]
             lon, lat = tile_center(tile.x, tile.y, config.zoom)
-            point = gpd.GeoDataFrame(
-                geometry=[Point(lon, lat)], crs="EPSG:4326"
-            )
+            point = gpd.GeoDataFrame(geometry=[Point(lon, lat)], crs="EPSG:4326")
             # if tile center within boundary of city, write to csv
             if boundary.geometry.contains(point)[0]:
                 csvwriter.writerow([tile.x, tile.y, config.zoom, lat, lon])
@@ -383,7 +382,7 @@ def save_image_with_lines(image_path, output_path):
     # Open the image file
     img = Image.open(image_path)
     img_arr = np.array(img)
-    
+
     fig, ax = plt.subplots()
     ax.imshow(img_arr)
 
@@ -395,19 +394,18 @@ def save_image_with_lines(image_path, output_path):
     one_third_vertical = width // 4
     two_thirds_vertical = 3 * width // 4
 
-
     # Draw a horizontal line in the middle of the image
-    ax.axhline(y=middle_horizontal, color='red', linewidth=2)
+    ax.axhline(y=middle_horizontal, color="red", linewidth=2)
 
     # Draw two vertical lines dividing the image into thirds
-    ax.axvline(x=one_third_vertical, color='red', linewidth=2)
-    ax.axvline(x=two_thirds_vertical, color='red', linewidth=2)
+    ax.axvline(x=one_third_vertical, color="red", linewidth=2)
+    ax.axvline(x=two_thirds_vertical, color="red", linewidth=2)
 
     # Remove axis
-    ax.axis('off')
+    ax.axis("off")
 
     # Save the figure to a file
-    plt.savefig(output_path, bbox_inches='tight', pad_inches=0, dpi=300)
+    plt.savefig(output_path, bbox_inches="tight", pad_inches=0, dpi=300)
     plt.close()
 
 
@@ -415,11 +413,13 @@ def crop_frame_for_img_folder(folder_path, output_folder):
     # Create the output folder if it doesn't exist
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
-    
+
     # List all files in the given folder
     for filename in os.listdir(folder_path):
-        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tif', '.tiff')):
+        if filename.lower().endswith(
+            (".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff")
+        ):
             image_path = os.path.join(folder_path, filename)
             output_path = os.path.join(output_folder, filename)
             save_image_with_lines(image_path, output_path)
-            print(f'Processed {filename}')
+            print(f"Processed {filename}")
