@@ -1,9 +1,7 @@
 create extension IF NOT EXISTS postgis_raster;
 SET postgis.gdal_enabled_drivers = 'ENABLE_ALL';
 
-/* 
- * Todo: filter nodes with tag surface or smoothness
- */
+
 ----------------------------------------------
 --- create table of nodes with tag info ---
 ----------------------------------------------
@@ -64,11 +62,3 @@ SET rast = (
     WHERE node_tags.surface = '{surface}' AND  node_tags.smoothness = '{smoothness}'
     --WHERE ST_Intersects(st_transform(mapillaryimg_small.wkb_geometry , 3857), rast::geometry)
 );
-
--- -- check stats
--- SELECT rid, (stats).*
--- FROM (SELECT rid, ST_SummaryStats(rast, 1) As stats
---     FROM dummy_rast) as foo ;
-    
--- SELECT rid, ST_AsText(ST_Envelope(rast)) As envgeomwkt
--- FROM dummy_rast;

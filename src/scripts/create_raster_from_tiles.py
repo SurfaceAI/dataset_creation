@@ -8,7 +8,7 @@ import sys
 
 sys.path.append("./")
 
-import utils
+import src.utils as utils
 import raster_functions as rf
 
 #### create a mercantile tile raster template based on dataset with tile coordinates

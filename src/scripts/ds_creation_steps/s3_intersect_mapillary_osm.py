@@ -9,7 +9,7 @@ import sys
 sys.path.append("./")
 sys.path.append("../")
 
-import utils
+import src.utils as utils
 import config
 
 def intersect_mapillary_osm():

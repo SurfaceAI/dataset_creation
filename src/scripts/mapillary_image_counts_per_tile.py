@@ -11,7 +11,7 @@ sys.path.append("./")
 # importing
 import config
 import constants as const
-import utils
+import src.utils as utils
 
 tiles = []
 

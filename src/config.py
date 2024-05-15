@@ -38,7 +38,6 @@ center_bboxes = {const.COLOGNE: {"xmin": 6.925906, "xmax": 6.998256, "ymin": 50.
 }
 
 ##labelstudio
-# labelstudio_absolute_path = "http://localhost:8080/data/local-files/?d={}"
 n_annotators = 3
 # n img per class for for interrater reliability
 n_irr = 10
@@ -46,8 +45,7 @@ n_irr = 10
 # n img per cluss for each chunk when annotating
 chunk_ids = [2]
 # n_per_chunk = 100
-# TODO: standardize naming
-#model_prediction_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/{}/metadata/model_predictions_{}_c{}_predicted.csv"
+
 cloud_image_folder = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/"
 
 model_prediction_path = os.path.join(cloud_image_folder, "training", "{}", "metadata")

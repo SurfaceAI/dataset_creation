@@ -10,7 +10,7 @@ sys.path.append("./")
 
 # importing
 import config
-import database_credentials as db
+import src.database_credentials as db
 
 def create_osm_tag_count_tif(surface, smoothness):
     # Connect to your PostgreSQL database

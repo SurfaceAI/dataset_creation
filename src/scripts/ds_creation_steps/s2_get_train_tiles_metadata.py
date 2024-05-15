@@ -9,9 +9,9 @@ from psycopg2.extras import DictCursor
 import pandas as pd
 
 
-import utils
+import src.utils as utils
 import config
-import database_credentials as db
+import src.database_credentials as db
 
 # 3. from these tiles, get metadata
 def get_train_tiles_metadata(write_to_db=True):

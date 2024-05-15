@@ -14,7 +14,7 @@ from PIL import Image
 sys.path.append("./")
 sys.path.append("../")
 
-import utils
+import src.utils as utils
 import config
 
 def delete_broken_images(folder_path, threshold_size_kb=1):

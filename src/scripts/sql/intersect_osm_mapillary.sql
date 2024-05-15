@@ -114,18 +114,3 @@ WHERE {table_name}.id = mapillary_selection_labeled.id;
 drop table mapillary_selection;
 drop table mapillary_selection_labeled;
 
-
-
--- ALTER TABLE {table_name}
--- DROP COLUMN IF EXISTS surface,
--- DROP COLUMN IF EXISTS smoothness,
--- DROP COLUMN IF EXISTS highway,
--- DROP COLUMN IF EXISTS cycleway,
--- DROP COLUMN IF EXISTS cycleway_surface,
--- DROP COLUMN IF EXISTS cycleway_smoothness,
--- DROP COLUMN IF EXISTS cycleway_right,
--- DROP COLUMN IF EXISTS cycleway_right_surface,
--- DROP COLUMN IF EXISTS cycleway_right_smoothness,
--- DROP COLUMN IF EXISTS cycleway_left,
--- DROP COLUMN IF EXISTS cycleway_left_surface,
--- DROP COLUMN IF EXISTS cycleway_left_smoothness;

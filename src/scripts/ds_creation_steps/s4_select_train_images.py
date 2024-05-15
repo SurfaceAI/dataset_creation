@@ -8,7 +8,7 @@ import numpy as np
 # setting path
 sys.path.append("./")
 
-import utils
+import src.utils as utils
 import config
 import constants as const
 

@@ -1,10 +1,9 @@
 import os
 import sys
 from pathlib import Path
-sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent))
+sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
 
 import config
-import constants as const
 
 import pandas as pd
 

@@ -16,11 +16,11 @@ from s6_prepare_manual_annotation import create_labelstudio_input_file
 sys.path.append("./")
 sys.path.append("../")
 
-import utils
+import src.utils as utils
 import config
 import constants as const
 import raster_functions as rf
-import database_credentials as db
+import src.database_credentials as db
 
 
 def get_autonahn_in_boundary(city, boundary):

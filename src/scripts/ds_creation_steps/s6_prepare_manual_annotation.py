@@ -9,7 +9,7 @@ import math
 
 sys.path.append("./")
 import config
-import utils
+import src.utils as utils
 
 
 def training_entity(row, img_folder):

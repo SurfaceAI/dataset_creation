@@ -1,12 +1,15 @@
-import pandas as pd
+import os
 import sys
+from pathlib import Path
 
-# setting path
-sys.path.append("./")
 
-import utils
-import config
+sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
+
 from tqdm import tqdm
+import pandas as pd
+
+import utils as utils
+import config
     
 ###### use metadata pool of v5 to get more images for v5x #####
 

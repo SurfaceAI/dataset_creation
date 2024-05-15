@@ -1,6 +1,6 @@
 # Dataset creation
 
-This repository contains the code to create our test and training data for the training and evaluation of classifiers of road surface and smoothness (quality).
+This repository contains the code to create our test and training data for the training and evaluation of classifiers of road surface type and quality.
 
 ## Prerequisites
 
@@ -35,8 +35,8 @@ a `database_credential.py` file is expected in the root folder in the format of:
 
 ## Dataset creation
 
-[This](/scripts/train_test_data.py) is the entry point for creation of train and test datasets.
-There, all 7 steps are sequentially executed. Their respective scripts can be found in this [folder](/scripts/ds_creation_steps/).
+[This](/src/scripts/00_create_dataset.py) is the entry point for creation of train and test datasets.
+There, all 8 steps (+ 2 additional for catching annotation errors) are sequentially executed. Their respective scripts can be found in this [folder](/src/scripts/ds_creation_steps/).
 
 These steps are the following:
 
@@ -61,19 +61,19 @@ We then sample 1000 images per city.
 ### Create training data
 For the training data, our aim is to intersect Mapillary images with OSM surface and smoothness tags and create a labeled dataset where each class (i.e, surface/smoothness combination) has 1000 images.
 
-- **[Step 1](/scripts/ds_creation_steps/s2_get_train_tiles_metadata.py): select train tiles**
+- **[Step 1](/src/scripts/ds_creation_steps/s1_select_train_tiles.py): select train tiles**
   - exclude all tiles that are part of test data tiles
   - sample a subset from remaining tiles, to keep computational times in a reasonable limit (the sampling procedure evolved over different versions - see below)
 
-- **[Step 2](/scripts/ds_creation_steps/s2_get_train_tiles_metadata.py): get train tiles metadata from mapillary**
+- **[Step 2](/src/scripts/ds_creation_steps/s2_get_train_tiles_metadata.py): get train tiles metadata from mapillary**
   - query metadata (*id, sequence_id, captured_at, compass_angle, is_pano, creator_id, lon, lat*) for all Mapillary images within selected tiles
   - write metadata to csv file, but more importantly to the same database where the OSM data is stored
 
-- **[Step 3](/scripts/ds_creation_steps/s3_intersect_mapillary_osm.py): intersect Mapillary with OSM**
+- **[Step 3](/src/scripts/ds_creation_steps/s3_intersect_mapillary_osm.py): intersect Mapillary with OSM**
   - intersects OSM streets with tags surface and smoothness with Mapillary image geolocations such that each image obtains a tag surface and smoothness (if a respective tag is provided in OSM)
   - exact intersection rules (e.g., max. distance between street and point) evolved over different versions - see below 
 
-- **[Step 4](/scripts/ds_creation_steps/s4_select_train_images.py): select train images**
+- **[Step 4](/src/scripts/ds_creation_steps/s4_select_train_images.py): select train images**
   - from all images, we now only consider images that obtained resepctive OSM tags
   - from remaining images, images are selected to certain criteria (again, they evolved over different versions - see below )
 
@@ -85,6 +85,12 @@ For the training data, our aim is to intersect Mapillary images with OSM surface
 
 - **[Step 7](/scripts/ds_creation_steps/s7_prepare_image_folders.py): prepare image folders**
   - after data has been annotated, image folders are created according to the labels
+
+To catch annotation errors, there are additionally:
+- [Step 8](/scripts/ds_creation_steps/s8_relabel_misclassified_surfaces.py): for surface type
+- [Step 9](/scripts/ds_creation_steps/s8_relabel_misclassified_qualities.py): for surface qualities
+
+Model predictions and annotations are compared and those that differ from one another will be re-evaluated.
 
 
 #### Dataset versions
@@ -248,6 +254,8 @@ Pre-selection of tiles:
   - c1: asphalt bad & intermediate (up to 2500 images per class)
   - c2: paving stones excellent, intermediate, bad (up to 2500 images per class)
 
+
+##### For further experiments new (unlabeled) datapools were required. For these, we created the following:
 
 **V5X**
 
