@@ -9,16 +9,17 @@ import pandas as pd
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import DictCursor
-from s6_prepare_manual_annotation import create_labelstudio_input_file
 from shapely.geometry import Point
 
 sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
+sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent.parent))
 
 import config
 import constants as const
-import database_credentials as db
 import raster_functions as rf
-import utils as utils
+import utils
+from scripts.ds_creation_steps.s6_prepare_manual_annotation import create_labelstudio_input_file
+import database_credentials as db
 
 
 def get_autonahn_in_boundary(city, boundary):

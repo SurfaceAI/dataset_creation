@@ -3,15 +3,16 @@ import sys
 from pathlib import Path
 
 sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
+sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent.parent))
 
 import pandas as pd
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import DictCursor
 
+import utils
 import config
 import database_credentials as db
-import utils as utils
 
 
 # 3. from these tiles, get metadata

@@ -341,6 +341,7 @@ if __name__ == "__main__":
     #        selected_smoothness={const.VERY_BAD: 300, const.BAD: 50, const.INTERMEDIATE: 50})
     # create_chunks([8], n_per_chunk=None, filtered_out = True, filtered_out_perc=0.1)
     # create_chunks([9], n_per_chunk=None)
+    create_chunks([9], n_per_chunk=None)
 
     # v100
     # select_training_sample()

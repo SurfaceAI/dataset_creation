@@ -1,16 +1,16 @@
 import os
-# setting path
 import sys
+from pathlib import Path
 
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import DictCursor
 
-sys.path.append("./")
+sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
+sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent))
 
-# importing
-import config
-import src.database_credentials as db
+import config as config
+import database_credentials as db
 
 
 def create_osm_tag_count_tif(surface, smoothness):

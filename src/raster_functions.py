@@ -8,7 +8,7 @@ from PIL import Image
 from rasterio.features import rasterize
 from rasterio.transform import from_origin
 
-import config
+import config as config
 
 
 def read_raster(raster_path):

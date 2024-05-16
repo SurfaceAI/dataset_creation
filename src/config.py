@@ -1,12 +1,12 @@
 import os
-
 import constants as const
+
 
 # location of data folder
 data_folder = "data"
 
 ## mapillary settings
-token_path = "mapillary_token.txt"
+token_path = os.path.join("mapillary_token.txt")
 mapillary_tile_url = "https://tiles.mapillary.com/maps/vtp/{}/2/{}/{}/{}"
 mapillary_graph_url = "https://graph.mapillary.com/{}"
 tile_coverage = "mly1_public"
@@ -15,7 +15,7 @@ zoom = 14
 image_size = "thumb_1024_url"
 
 # train data paramenters
-ds_version = "v200"
+ds_version = "v5"
 max_img_per_sequence_train = 5
 max_img_per_tile = 5
 tile_sample_size = 500
@@ -77,6 +77,7 @@ model_prediction_file = {
     "v5c6": "surface_prediction-V5_c6-20240305_171454.csv",
     "v5c7": "surface_prediction-V5_c7-20240306_100314.csv",
     "v101": "effnet_surface_quality_prediction-V101_unsorted_images-20240513_005444.csv",
+    "v200": "effnet_surface_quality_prediction-V200-20240515_103743.csv"
 }
 
 manual_added_images = os.path.join(
