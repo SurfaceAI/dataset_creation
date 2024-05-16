@@ -59,8 +59,8 @@ n_annotators = 3
 # n img per class for for interrater reliability
 n_irr = 10
 
-# n img per cluss for each chunk when annotating
 chunk_ids = [2]
+# n img per cluss for each chunk when annotating
 # n_per_chunk = 100
 
 cloud_image_folder = (
@@ -139,10 +139,6 @@ autobahn_path = os.path.join(data_folder, "autobahn.shp")
 filtered_autobahn_path = os.path.join(
     data_folder, "test_data", "{}", "autobahn_filtered.geojson"
 )
-# berlin_tiles_path = 'data/berlin_image_counts.csv'
-# berlin_raster_template = 'data/berlin_tile_raster_template.tif'
-# berlin_raster_image_counts = 'data/berlin_tile_raster.tif'
-
 # test city paths (bracket will be filled with city name)
 test_data_folder = os.path.join(data_folder, "test_data")
 test_city_tiles_path = os.path.join(test_data_folder, "{}", "city_tiles.csv")
@@ -172,8 +168,6 @@ train_tiles_selection_path = os.path.join(
 train_image_selection_metadata_path = os.path.join(
     data_folder, "{}", "train_image_selection_metadata.csv"
 )
-# train_image_sample_metadata_path = os.path.join(data_folder,"{}_train_image_sample_metadata.csv")
-# train_image_sample_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training_data/{}/00_sample"
 train_image_folder = os.path.join(data_folder, "{}", "train_images")
 chunk_image_folder = os.path.join(train_image_folder, "c{}")
 train_image_metadata_with_tags_path = os.path.join(
