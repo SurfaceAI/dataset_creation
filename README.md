@@ -1,6 +1,13 @@
 # Dataset creation
 
-This repository contains the code to create our test and training data for the training and evaluation of classifiers of road surface type and quality.
+This repository implements the semi-automated image selection and pre-labeling strategies as described in this xxx publication. 
+Images are sampled from Mapillary for manual annotation to create a dataset or street-level imagery on surface type and quality. 
+This data can be used for training of classifiers of road surface type and quality.
+
+**The final dataset is published [here](TODO).**
+
+If you use this dataset, please cite as:
+  TODO
 
 ## Prerequisites
 

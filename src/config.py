@@ -52,6 +52,18 @@ center_bboxes = {
         "ymin": 48.09620,
         "ymax": 48.16591,
     },
+    const.HEILBRONN: {
+        "xmin": 9.044609,
+        "xmax": 9.301967,
+        "ymin": 49.092888,
+        "ymax": 49.209728,
+    },
+        const.LUNENBURG: {
+        "xmin": 10.330825,
+        "xmax": 10.514356,
+        "ymin": 53.191676,
+        "ymax": 53.286644,
+    },
 }
 
 ##labelstudio
@@ -175,7 +187,7 @@ train_image_metadata_with_tags_path = os.path.join(
 )
 
 # sql scripts
-sql_scripts_path = os.path.join("scripts", "sql")
+sql_scripts_path = os.path.join("src", "scripts", "sql")
 sql_script_intersect_osm_mapillary_path = os.path.join(
     sql_scripts_path, "intersect_osm_mapillary.sql"
 )
