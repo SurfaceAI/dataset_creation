@@ -73,6 +73,18 @@ Total number of images: xxx
 Three annotators labeled the dataset, such that each image was annotated by one person. When in doubt, annotators could have their labels revised by a peer.
 1800 images were annotated by all three annotators, resulting in a Krippendorff's alpha of 0.96 for surface type and 0.74 for surface quality.
 
+### Recommended image preprocessing
+
+As the focal road located in the bottom center of the street-level image is labeled, it is recommended to crop images to their lower and middle half prior using for classification tasks.
+
+This is an exemplary code for recommended image preprocessing:
+
+```python
+img = Image.open(image_path)
+width, height = img.size
+img_cropped = img.crop((0.25 * width, 0.5 * height, 0.75 * width, height))
+```
+
 
 ## License
 
