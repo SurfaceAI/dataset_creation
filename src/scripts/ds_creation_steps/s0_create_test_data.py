@@ -192,10 +192,10 @@ def raster_id_by_res(boundary, resolution, output_file_path, city):
 if __name__ == "__main__":
     cities = [
         # const.COLOGNE,
-        const.MUNICH,
+        # const.MUNICH,
         # const.DRESDEN,
-        # const.HEILBRONN,
-        # const.LUNENBURG,
+        #const.HEILBRONN,
+        const.LUNENBURG,
     ]
 
     for city in cities:
@@ -230,6 +230,7 @@ if __name__ == "__main__":
         create_labelstudio_input_file(
             metadata,
             is_testdata=True,
+            img_path=f"test_data/{city}",
             output_path=config.test_labelstudio_input_path.format(city),
             test_city=city,
         )

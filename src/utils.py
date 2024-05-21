@@ -20,6 +20,8 @@ from psycopg2.extras import DictCursor
 from shapely.geometry import Point
 from vt2geojson.tools import vt_bytes_to_geojson
 
+from tqdm import tqdm
+
 import config as config
 import constants as const
 import database_credentials as db
@@ -414,11 +416,10 @@ def crop_frame_for_img_folder(folder_path, output_folder):
         os.makedirs(output_folder)
 
     # List all files in the given folder
-    for filename in os.listdir(folder_path):
+    for filename in tqdm(os.listdir(folder_path)):
         if filename.lower().endswith(
             (".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff")
         ):
             image_path = os.path.join(folder_path, filename)
             output_path = os.path.join(output_folder, filename)
             save_image_with_lines(image_path, output_path)
-            print(f"Processed {filename}")

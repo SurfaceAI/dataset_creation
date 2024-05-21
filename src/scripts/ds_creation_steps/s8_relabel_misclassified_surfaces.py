@@ -95,6 +95,7 @@ metadata.rename(
 create_labelstudio_input_file(
     metadata,
     is_testdata=False,
+    img_path= config.ds_version,
     output_path=os.path.join(ds_metadata_path, "relabel_misclassified.json"),
     test_city=None,
 )

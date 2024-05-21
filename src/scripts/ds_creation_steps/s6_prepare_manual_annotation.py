@@ -82,15 +82,15 @@ def test_entity(row, img_folder):
     return entity
 
 
-def create_labelstudio_input_file(metadata, is_testdata, output_path, test_city=None):
+def create_labelstudio_input_file(metadata, is_testdata, img_path, output_path, test_city=None):
     # Convert each row to JSON object and collect them in a list
     json_data = []
     for _, row in metadata.iterrows():
         if is_testdata:
-            img_url = config.labelstudio_absolute_path.format(f"test_data/{test_city}")
+            img_url = config.labelstudio_absolute_path.format(img_path)
             entity = test_entity(row, img_url)
         else:
-            img_url = config.labelstudio_absolute_path.format(config.ds_version)
+            img_url = config.labelstudio_absolute_path.format(img_path)
             entity = training_entity(row, img_url)
         json_data.append(entity)
 
@@ -169,6 +169,7 @@ def prepare_manual_annotation(chunk_ids=None, n_per_chunk=100):
                     ["surface_clean", "smoothness_clean"]
                 ),
                 False,
+                config.ds_version,
                 config.interrater_reliability_img_ids_path.format(
                     config.ds_version, "json_path"
                 ),
@@ -228,6 +229,7 @@ def prepare_manual_annotation(chunk_ids=None, n_per_chunk=100):
                         ["surface_clean", "smoothness_clean"]
                     ),
                     False,
+                    config.ds_version,
                     config.annotator_ids_path.format(
                         config.ds_version, chunk_id, i, "json"
                     ),
