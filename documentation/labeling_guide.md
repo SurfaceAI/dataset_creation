@@ -23,7 +23,6 @@ Descriptions are adapted from the [OSM Wiki for `smoothness`](https://wiki.opens
 
 ## Paving stones
 
-| Quality    | Description                                                                                                                                                                                                                                                                                   |                            |
 | Quality    | Description                                                                                                                                                                                                                                                                                   |                                                         |
 |------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
 | excellent  | Newly installed and regularly laid paving stones that show no signs of wear. Gaps may be visible, but they are small and uniform and do not significantly affect the driving experience.                                                                                                        | <img src="imgs/paving_stones_excellent.jpg" width="800">               |
