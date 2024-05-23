@@ -38,7 +38,6 @@ elif exp_id == 2:
     df = pd.read_csv(os.path.join(Path(config.cloud_image_folder).parent, "mapillary_images", "automated_labeling_experiments",
                                 "gpt_experiments", "results", f"experiment_{exp_id}_V{ds_version}_{surface}_batch_{batch_id}{additional_name}.csv"))
 
-# ashpalt bad results
 df.rename(columns={"image_id": "id", "preselection_type": "surface_clean", "prediction": "smoothness_clean"}, inplace=True)
 s6.create_labelstudio_input_file(df[df.smoothness_clean == smoothness], is_testdata=False, img_path ="experiments", 
                                  output_path=os.path.join(config.data_folder, "experiments", f"exp{exp_id}_gpt_{surface}_{smoothness}_labelstudio_batch{batch_id}.json"))
