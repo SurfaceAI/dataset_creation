@@ -143,17 +143,20 @@ def get_images_metadata(tile):
     return (header, output)
 
 
-def download_image(image_id, image_folder):
+def download_image(image_id, image_folder, image_size = None):
     """Download image file based on image_id and save to given image_folder
 
     Args:
         image_id (str): ID of image to download
         image_folder (str): path of folder to save image to
     """
+    if image_size is None:
+        image_size = config.image_size
+
     response = requests.get(
         config.mapillary_graph_url.format(image_id),
         params={
-            "fields": config.image_size,
+            "fields": image_size,
             "access_token": access_tokens[current_token],
         },
     )
@@ -162,10 +165,11 @@ def download_image(image_id, image_folder):
         print(response.status_code)
         print(response.reason)
         print(f"image_id: {image_id}")
+        return False
     else:
         data = response.json()
-        if config.image_size in data:
-            image_url = data[config.image_size]
+        if image_size in data:
+            image_url = data[image_size]
 
             # image: save each image with ID as filename to directory by sequence ID
             image_name = "{}.jpg".format(image_id)
@@ -173,8 +177,10 @@ def download_image(image_id, image_folder):
             with open(image_path, "wb") as handler:
                 image_data = requests.get(image_url, stream=True).content
                 handler.write(image_data)
+            return True
         else:
-            print(f"no image size {config.image_size} for image {image_id}")
+            print(f"no image size {image_size} for image {image_id}")
+            return False
 
 
 def query_and_write_img_metadata(tiles, out_path):

@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from PIL import Image
+from tqdm import tqdm
 
 sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
 
@@ -46,8 +47,14 @@ def download_training_images(chunk_ids=None, n_per_chunk=100, copy_existing=Fals
         if not os.path.exists(destination_folder_path):
             os.makedirs(destination_folder_path)
 
+        existing_files = os.listdir(destination_folder_path)
+
         for i in range(len(df)):
             img_id = df.iloc[i,]["img_id"]
+
+            if str(img_id) + ".jpg" in existing_files:
+                continue
+
             if np.isin(img_id, [688027686094143]):
                 continue
             img_chunk = df.iloc[i,]["chunk_id"]
@@ -65,11 +72,13 @@ def download_training_images(chunk_ids=None, n_per_chunk=100, copy_existing=Fals
         start = time.time()
         if chunk_ids is None:
             metadata = pd.read_csv(
-                config.train_image_selection_metadata_path.format(config.ds_version)
-            )
+                    config.train_image_selection_metadata_path.format(config.ds_version)
+                )
+            img_ids_to_download = metadata["id"].tolist()
 
-        if not n_per_chunk is None:
-            chunk_ids = range(1, math.ceil(len(metadata) / n_per_chunk))
+        else:
+            if not n_per_chunk is None:
+                chunk_ids = range(1, math.ceil(len(metadata) / n_per_chunk))
 
             img_ids_to_download = []
             for chunk_id in chunk_ids:
@@ -93,12 +102,8 @@ def download_training_images(chunk_ids=None, n_per_chunk=100, copy_existing=Fals
                         img_ids_to_download += [
                             line.strip() for line in file.readlines()
                         ]
-        else:
-            img_ids_to_download = metadata["id"].tolist()
 
-        for i in range(0, len(img_ids_to_download)):
-            if i % 100 == 0:
-                print(f"{i} images downloaded")
+        for i in tqdm(range(0, len(img_ids_to_download))):
             utils.download_image(img_ids_to_download[i], folder)
 
         # remove broken images
@@ -120,4 +125,7 @@ if __name__ == "__main__":
     # download_training_images([8], n_per_chunk=None, copy_existing=True)
 
     # download_training_images([1, 2])
+    # download_training_images(n_per_chunk=None)
+
+    # v102
     download_training_images(n_per_chunk=None)

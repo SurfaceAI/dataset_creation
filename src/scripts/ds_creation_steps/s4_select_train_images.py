@@ -341,7 +341,7 @@ if __name__ == "__main__":
     #        selected_smoothness={const.VERY_BAD: 300, const.BAD: 50, const.INTERMEDIATE: 50})
     # create_chunks([8], n_per_chunk=None, filtered_out = True, filtered_out_perc=0.1)
     # create_chunks([9], n_per_chunk=None)
-    create_chunks([9], n_per_chunk=None)
+    # create_chunks([9], n_per_chunk=None)
 
     # v100
     # select_training_sample()
@@ -351,21 +351,49 @@ if __name__ == "__main__":
     #               selected_smoothness={const.EXCELLENT: None, const.INTERMEDIATE: None, const.BAD: None})
 
     # V101
-    # extra script: v101.py
+    # extra script: v5x.py
+    # create_chunks(
+    #     [1],
+    #     n_per_chunk=None,
+    #     selected_surface=[const.ASPHALT],
+    #     selected_smoothness={const.INTERMEDIATE: None, const.BAD: None},
+    # )
+    # create_chunks(
+    #     [2],
+    #     n_per_chunk=None,
+    #     selected_surface=[const.PAVING_STONES],
+    #     selected_smoothness={
+    #         const.EXCELLENT: None,
+    #         const.INTERMEDIATE: None,
+    #         const.BAD: None,
+    #     },
+    # )
+
+    # both, v5x and v100
     create_chunks(
-        [1],
+        [3],
         n_per_chunk=None,
-        selected_surface=[const.ASPHALT],
-        selected_smoothness={const.INTERMEDIATE: None, const.BAD: None},
-    )
-    create_chunks(
-        [2],
-        n_per_chunk=None,
-        selected_surface=[const.PAVING_STONES],
+        selected_surface=[const.CONCRETE],
         selected_smoothness={
             const.EXCELLENT: None,
-            const.INTERMEDIATE: None,
             const.BAD: None,
+        },
+    )
+    create_chunks(
+        [4],
+        n_per_chunk=None,
+        selected_surface=[const.SETT],
+        selected_smoothness={
+            const.GOOD: None,
+        },
+    )
+    
+    create_chunks(
+        [5],
+        n_per_chunk=None,
+        selected_surface=[const.UNPAVED],
+        selected_smoothness={
+            const.VERY_BAD: None,
         },
     )
 
