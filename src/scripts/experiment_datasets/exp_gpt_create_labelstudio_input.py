@@ -15,11 +15,11 @@ import scripts.ds_creation_steps.s6_prepare_manual_annotation as s6
 
 # GPT results
 
-surface = "asphalt"
-smoothness = "bad"
-batch_id = 2
-exp_id = 2
-ds_version = 200
+surface = "sett"
+smoothness = "good"
+batch_id = None
+exp_id = None
+ds_version = 102
 
 # TODO: filter exp. 1 images for paving stones
 
@@ -31,13 +31,14 @@ if exp_id == 1:
 elif exp_id == 2:
     img_folder = f"V{ds_version}/{surface}"
     crop_folder = f"{smoothness}_crop"
-    if batch_id == 2:
-        additional_name = "_excl_no_focus"
-    else:
-        additional_name = ""
     df = pd.read_csv(os.path.join(Path(config.cloud_image_folder).parent, "mapillary_images", "automated_labeling_experiments",
-                                "gpt_experiments", "results", f"experiment_{exp_id}_V{ds_version}_{surface}_batch_{batch_id}{additional_name}.csv"))
-
+                                "gpt_experiments", "results", f"experiment_{exp_id}_V{ds_version}_{surface}_batch_{batch_id}.csv"))
+else:
+    img_folder = f"V{ds_version}/{surface}/{smoothness}"
+    crop_folder = f"{smoothness}_crop"
+    df = pd.read_csv(os.path.join(Path(config.cloud_image_folder).parent, "mapillary_images", "automated_labeling_experiments",
+                                "gpt_experiments", "results", f"V{ds_version}_{surface}_{smoothness}.csv"))
+    
 df.rename(columns={"image_id": "id", "preselection_type": "surface_clean", "prediction": "smoothness_clean"}, inplace=True)
 s6.create_labelstudio_input_file(df[df.smoothness_clean == smoothness], is_testdata=False, img_path ="experiments", 
                                  output_path=os.path.join(config.data_folder, "experiments", f"exp{exp_id}_gpt_{surface}_{smoothness}_labelstudio_batch{batch_id}.json"))
@@ -61,7 +62,7 @@ for i in tqdm(range(len(df))):
 
 
 utils.crop_frame_for_img_folder(
-        f"/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/{img_folder}/sorted/batch_{batch_id}/{surface}/{smoothness}/",
-        f"/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/V{ds_version}/{surface}/batch_{batch_id}/{crop_folder}",
+        f"{destination_path}/{surface}/{smoothness}/",
+        f"{destination_path}/{crop_folder}",
     )
 
