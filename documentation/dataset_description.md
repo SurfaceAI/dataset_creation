@@ -104,7 +104,7 @@ If you use this dataset, please cite as:
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 This is part of the SurfaceAI project at the University of Applied Sciences, HTW Berlin.
-- Prof. Dr. Helena Mihajlević
+- Prof. Dr. Helena Mihaljević
 - Alexandra Kapp
 - Edith Hoffmann
 - Esther Weigmann
