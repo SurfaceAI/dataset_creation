@@ -102,7 +102,7 @@ Model predictions and annotations are compared and those that differ from one an
 
 ## Automatic Label Generation Strategies
 
-### GPT-4 Image Prompting Code
+### GPT-4 Image Prompting
 
 To find additional images for underrepresented classes, you can use the image prompting capabilities of the GPT-4 API. The relevant code includes:
 
@@ -111,7 +111,7 @@ To find additional images for underrepresented classes, you can use the image pr
 3. [Class definitions and additional instructions](src/scripts/gpt_experiments/gpt4_prompting_definitions.py)
 4. [Helper functions](src/scripts/gpt_experiments/gpt_helpers.py)
 
-### Similarity search
+### Similarity Search
 
 #### Dataset versions
 
