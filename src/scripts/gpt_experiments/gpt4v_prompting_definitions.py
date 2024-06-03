@@ -64,9 +64,9 @@ INSTRUCTIONS = """
 
 3) Step 3: Check the quantity and the size of the damages. 
 
-3) Step 4: Then decide if you could ride on the surface with  a skateboard, rollerblades, racing bikes, city bike, or a normal car. 
+4) Step 4: Then decide if you could ride on the surface with  a skateboard, rollerblades, racing bikes, city bike, or a normal car. 
 
-4) Step 5: If you detect characteristics of two classes, choose the worse class.
+5) Step 5: If you detect characteristics of two classes, choose the worse class.
 
 
 """
@@ -75,15 +75,15 @@ INSTRUCTIONS_EXCLUDE_NO_FOCUS = """
 
 1) Step 1: Check whether the focus are of the image depicts a road, cycleway or sidewalk. If not, do not choose any of the given classes but return the string 'no street'.
 
-1) Step 2: If you detect multiple surface types, only consider the path, driving lane, cycleway or sidewalk in the focus area.
+2) Step 2: If you detect multiple surface types, only consider the path, driving lane, cycleway or sidewalk in the focus area.
 
-2) Step 3: Check if the road surface is worn off and if you can find any damages, like cracks. 
+3) Step 3: Check if the road surface is worn off and if you can find any damages, like cracks. 
 
-3) Step 4: Check the quantity and the size of the damages. 
+4) Step 4: Check the quantity and the size of the damages. 
 
-3) Step 5: Then decide if you could ride on the surface with  a skateboard, rollerblades, racing bikes, city bike, or a normal car. 
+5) Step 5: Then decide if you could ride on the surface with  a skateboard, rollerblades, racing bikes, city bike, or a normal car. 
 
-4) Step 6: If you detect characteristics of two classes, choose the worse class.
+6) Step 6: If you detect characteristics of two classes, choose the worse class.
 
 
 """
