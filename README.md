@@ -100,6 +100,18 @@ To catch annotation errors, there are additionally:
 
 Model predictions and annotations are compared and those that differ from one another will be re-evaluated.
 
+## Automatic Label Generation Strategies
+
+### GPT-4 Image Prompting Code
+
+To find additional images for underrepresented classes, you can use the image prompting capabilities of the GPT-4 API. The relevant code includes:
+
+1. [Main script for prompting](src/scripts/gpt_experiments/gpt_image_annotation.py)
+2. [Example prompt](src/scripts/gpt_experiments/example_prompt.md)
+3. [Class definitions and additional instructions](src/scripts/gpt_experiments/gpt4_prompting_definitions.py)
+4. [Helper functions](src/scripts/gpt_experiments/gpt_helpers.py)
+
+### Similarity search
 
 #### Dataset versions
 
