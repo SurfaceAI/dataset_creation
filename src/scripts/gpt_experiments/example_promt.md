@@ -1,4 +1,4 @@
-messages = [
+
     {
         "role": "system", 
         "content": [
@@ -24,9 +24,8 @@ messages = [
 
                         3) intermediate: Asphalt roads that shows signs of maintenance, such as patches of repaired surface, wider cracks larger than 2cm. Asphalt sidewalks may contain potholes, but these are small, shallow (<3cm deep) and can be easily avoided, asphalt driving lanes shows damage due to subsidence (depressions of a scale >50 cm) or heavy traffic (shallow ruts in asphalt caused by trucks in summer). This means that the road can be used by normal city bikes, wheelchairs and sports cars, but not by a racing bike.
 
-                        4) bad: Damaged asphalt roads that show clear signs of maintenance: This might include potholes, some of them quite deep, which might decrease the average speed of cars.  However, it isn’t so rough that ground clearance becomes a problem. Meaning that the street causes trouble to normal city bike but not a trekking bike and a car
+                        4) bad: Damaged asphalt roads that show clear signs of maintenance: This might include potholes, some of them quite deep, which might decrease the average speed of cars.  However, it isn’t so rough that ground clearance becomes a problem. Meaning that the street causes trouble to normal city bike but not a trekking bike and a car.
 
-""".
                         Please adhere to the following instructions: 
                         1) Step 1: If you detect multiple surface types, only consider the path, driving lane, cycleway or sidewalk in the focus area.
 
