@@ -1,13 +1,14 @@
 # Dataset creation
 
-This repository implements the semi-automated image selection and pre-labeling strategies as described in this xxx publication. 
+This repository implements the semi-automated image selection and pre-labeling strategies as described in this publication (in review). 
 Images are sampled from Mapillary for manual annotation to create a dataset or street-level imagery on surface type and quality. 
 This data can be used for training of classifiers of road surface type and quality.
 
-**The final dataset is published [here](TODO).**
+**The final dataset is published [here](https://zenodo.org/records/11449977).**
 
 If you use this dataset, please cite as:
-  TODO
+
+Kapp, A., Hoffmann, E., Weigmann, E., & Mihaljevic, H. (2024). StreetSurfaceVis: a dataset of street-level imagery with annotations of road surface type and quality (V1.0) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.11449977
 
 ## Prerequisites
 
@@ -39,6 +40,7 @@ a `database_credential.py` file is expected in the root folder in the format of:
 
 *For our run, metadata for Mapillary and OSM both taken from 20th November 2023.*
 
+*A second set of Mapillary images metadata (for versions V0.100 and V0.200) were queried May 2024.*
 
 ## Dataset creation
 
@@ -63,7 +65,7 @@ For each city, we aim to obtain a diverse dataset. We thus restrict
 
 We further remove images from the Autobahn, as they take up a larger share of images, however, we are interested in classifying urban regions. (Autobahn has typically good/excellent asphalt).
 
-We then sample 1000 images per city.
+We then sample 1,000 images per city.
 
 ### Create training data
 For the training data, our aim is to intersect Mapillary images with OSM surface and smoothness tags and create a labeled dataset.
@@ -72,7 +74,7 @@ For the training data, our aim is to intersect Mapillary images with OSM surface
   - exclude all tiles that are part of test data tiles
   - sample a subset from remaining tiles, to keep computational times in a reasonable limit (the sampling procedure evolved over different versions - see below)
 
-- **[Step 2](/src/scripts/ds_creation_steps/s2_get_train_tiles_metadata.py): get train tiles metadata from mapillary**
+- **[Step 2](/src/scripts/ds_creation_steps/s2_get_train_tiles_metadata.py): get train tiles metadata from Mapillary**
   - query metadata (*id, sequence_id, captured_at, compass_angle, is_pano, creator_id, lon, lat*) for all Mapillary images within selected tiles
   - write metadata to csv file, but more importantly to the same database where the OSM data is stored
 
@@ -100,20 +102,8 @@ To catch annotation errors, there are additionally:
 
 Model predictions and annotations are compared and those that differ from one another will be re-evaluated.
 
-## Automatic Label Generation Strategies
 
-### GPT-4 Image Prompting
-
-To find additional images for underrepresented classes, you can use the image prompting capabilities of the GPT-4 API. The relevant code includes:
-
-1. [Main script for prompting](src/scripts/gpt_experiments/gpt_image_annotation.py)
-2. [Example prompt](src/scripts/gpt_experiments/example_prompt.md)
-3. [Class definitions and additional instructions](src/scripts/gpt_experiments/gpt4_prompting_definitions.py)
-4. [Helper functions](src/scripts/gpt_experiments/gpt_helpers.py)
-
-### Similarity Search
-
-#### Dataset versions
+### Dataset versions
 
 The process of creating training data was evolving. In the following section, we documented the evolution up to the currently used version and considerations applied in each version.
 Changes are marked in **bold**.
@@ -123,7 +113,7 @@ We started labeling at **V0.4**.
 **V0.5** is a *unlabled datapool*. Labels were added in iterations and new *labled dataset versions* were continuously created. Each new data version from V0.6 to V0.9 is the collection of all *labled images thus far*.  
 V0.10 and V0.12 do not add further images, instead, they refine existing annotations with the goal of finding annotation errors. V0.11 additionally added a sample of 10% automatically discarded images in case of an introduced bias.
 
-**V0.100, V0.101, V0.200 and 0.V5X** are new *datapools* for further experiments of semi-automated labeling for under-represented classes. Thus, they are not labeled systematically but only images that were algorithmically identified as belonging to under-represented classes were manually checked and if confirmed, added to the final dataset V1.0.
+**V0.100, V0.200 and 0.V5X** are new *datapools* for further experiments of semi-automated labeling for under-represented classes. Thus, they are not labeled systematically but only images that were algorithmically identified as belonging to under-represented classes were manually checked and if confirmed (see Section below), added to the final dataset V1.0.
 
 **V0.0**: 
 
@@ -293,10 +283,21 @@ V0.5X creates a new metadata selection out of the V0.5 metadata pool. It thereby
 
   - c1: asphalt bad (up to 2.500 images per class)
   - c2: paving stones excellent, intermediate, bad (up to 2.500 images per class)
+  - c3: concrete excellent, bad
+  - c4: sett good
+  - c5: unpaved very bad
 
 **V0.101**
 
 Combination of V0.100 c1, c2 and V0.5X c1, c2.
+
+**V0.102**
+
+Combination of V0.100 c3 and c4
+
+**V0.103**
+
+V0.100 c5
 
 **V0.200**
 
@@ -307,4 +308,38 @@ New datapool *without OSM based pre-selection*.
   - max. 5 per tile
   - max. 10 per sequence
 
-  **V1.0**
+ **V1.0**
+
+ - all of V0.12
+ - additional annotated images of V0.100 and V0.200
+ - test cities
+
+ Counts per class:
+
+ Total number of images: 9,122 (including 776 test images)
+
+
+|                 | excellent | good | intermediate | bad | very bad |
+|-----------------|-----------|------|--------------|-----|----------|
+| asphalt         |    971    | 1696 |      821     | 246 |          |
+| concrete        |    314    |  350 |      250     |  58 |          |
+| paving stones   |    385    | 1063 |      519     |  70 |          |
+| sett            |           |  129 |      694     | 540 |          |
+| unpaved         |           |      |      326     | 387 |    303   |
+
+
+
+## Automatic Label Generation Strategies
+
+### GPT-4 Image Prompting
+
+To find additional images for underrepresented classes, you can use the image prompting capabilities of the GPT-4 API. The relevant code includes:
+
+1. [Main script for prompting](src/scripts/gpt_experiments/gpt_image_annotation.py)
+2. [Example prompt](src/scripts/gpt_experiments/example_prompt.md)
+3. [Class definitions and additional instructions](src/scripts/gpt_experiments/gpt4_prompting_definitions.py)
+4. [Helper functions](src/scripts/gpt_experiments/gpt_helpers.py)
+
+### Similarity Search
+
+TODO

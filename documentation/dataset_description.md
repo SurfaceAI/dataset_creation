@@ -10,12 +10,6 @@
 *StreetSurfaceVis* is an image dataset containing **9,122 street-level images from Germany** with labels on **road surface type and quality**. The CSV file `streetSurfaceVis_v1_0.csv` contains all image metadata. All images are available in four different sizes, based on the image width, in 256px, 1024px, 2048px and the original size.
 Folders containing the images are named according to the respective image size. Image files are named based on the `mapillary_image_id`.
 
-Please refer to [**this publication**](TODO) [1] and [**this GitHub Repository**](https://github.com/SurfaceAI/dataset_creation) [2] for details on the (semi-automated) image selection process.
-
-
-[1] TODO
-
-[2] https://github.com/SurfaceAI/dataset_creation
 
 ## Example images 
 
@@ -38,36 +32,30 @@ Each CSV record contains information about one street-level image with the follo
 
 ## Image source
 
-Images are obtained from [**Mapillary**]((https://www.mapillary.com/)) [3], a crowd-sourcing plattform for street-level imagery.
-More metadata about each image can be obtained via the [**Mapillary API**](https://www.mapillary.com/developer/api-documentation?locale=de_DE#image) [4].
-User-generated images are shared by Mapillary under the [CC-BY-SA](https://creativecommons.org/licenses/by-sa/4.0/) License [5].
+Images are obtained from [**Mapillary**]((https://www.mapillary.com/)) [1], a crowd-sourcing plattform for street-level imagery.
+More metadata about each image can be obtained via the [**Mapillary API**](https://www.mapillary.com/developer/api-documentation) [2].
+User-generated images are shared by Mapillary under the [CC-BY-SA](https://creativecommons.org/licenses/by-sa/4.0/) License [3].
 
 For each image, the dataset contains the `mapillary_image_id` and `user_name`: You can access user information on the Mapillary website by `https://www.mapillary.com/app/user/<USER_NAME>` and image information by `https://www.mapillary.com/app/?focus=photo&pKey=<MAPILLARY_IMAGE_ID>`
 
-If you use the provided images, please adhere to the [**terms of use of Mapillary**](https://www.mapillary.com/terms?locale=de_DE) [6].
+If you use the provided images, please adhere to the [**terms of use of Mapillary**](https://www.mapillary.com/terms) [4].
 
 
 ![Mapillary Logo](./imgs/mapillary_small.png)
 
-[3] https://www.mapillary.com/
+[1] https://www.mapillary.com/
 
-[4] https://www.mapillary.com/developer/api-documentation?locale=de_DE#image
+[2] https://www.mapillary.com/developer/api-documentation
 
-[5] https://creativecommons.org/licenses/by-sa/4.0/
+[3] https://creativecommons.org/licenses/by-sa/4.0/
 
-[6] https://www.mapillary.com/terms?locale=de_DE
+[4] https://www.mapillary.com/terms
 
 
 
 ## Instances per class
 
 Total number of images: 9,122 
-
-
-For modeling, we recommend using a train-test split where the test data includes geospatially distinct areas, thereby ensuring the model's ability to generalize to unseen regions is tested. We propose five cities varying in population size and from different regions in Germany for testing - images are tagged accordingly.
-
-Number of test images (train-test split): 776
-
 
 
 |                 | excellent | good | intermediate | bad | very bad |
@@ -79,6 +67,9 @@ Number of test images (train-test split): 776
 | unpaved         |           |      |      326     | 387 |    303   |
 
 
+For modeling, we recommend using a train-test split where the test data includes geospatially distinct areas, thereby ensuring the model's ability to generalize to unseen regions is tested. We propose five cities varying in population size and from different regions in Germany for testing - images are tagged accordingly.
+
+Number of test images (train-test split): 776
 
 
 ## Inter-rater-reliablility
@@ -104,9 +95,9 @@ This is an exemplary code for recommended image preprocessing in `Python`:
 
 ## License
 
-[**CC-BY-SA**](https://creativecommons.org/licenses/by-sa/4.0/) [7]
+[**CC-BY-SA**](https://creativecommons.org/licenses/by-sa/4.0/) [5]
 
-[7] https://creativecommons.org/licenses/by-sa/4.0/
+[5] https://creativecommons.org/licenses/by-sa/4.0/
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
