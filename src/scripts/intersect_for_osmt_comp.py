@@ -9,7 +9,6 @@ sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
 sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent))
 
 import pandas as pd
-import numpy as np
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import DictCursor
@@ -20,17 +19,17 @@ import database_credentials as db
 
 # create mapillary metadata only for v12
 
-def create_metadata_csv(absolute_path):
-    v5path = os.path.join(
-            os.getcwd(), config.train_tiles_metadata_path.format("v5")
+def create_metadata_csv(absolute_path, ds_version = "v5"):
+    train_tiles_path = os.path.join(
+            os.getcwd(), config.train_tiles_metadata_path.format(ds_version)
         )
-    metadata = pd.read_csv(v5path, dtype={"id": str})
+    metadata = pd.read_csv(train_tiles_path, dtype={"id": str})
     print("metadata loaded")
-    v5_selection = pd.read_csv("/Users/alexandra/Documents/GitHub/dataset_creation/data/v5/train_image_selection_metadata.csv", dtype={"id": str})
-    #v12 = pd.read_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/V12/metadata/annotations_combined.csv", dtype={"image_id": str})
-    metadata_v5 = metadata[metadata.id.isin(v5_selection.id)]
+    #selection = pd.read_csv(f"/Users/alexandra/Documents/GitHub/dataset_creation/data/{ds_version}/train_image_selection_metadata.csv", dtype={"id": str})
+    selection = pd.read_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/V4/metadata/v4_labels.csv", dtype={"id": str})
+    metadata = metadata[metadata.id.isin(selection.id)]
 
-    metadata_v5.to_csv(absolute_path, index=False)
+    metadata.to_csv(absolute_path, index=False)
     return (absolute_path)
 
 
@@ -75,15 +74,15 @@ def intersect_osm(absolute_path, name="v5new"):
 
 
 if __name__ == "__main__": 
-    absolute_path = "/Users/alexandra/Documents/GitHub/dataset_creation/data/v5_mapillary_metadata.csv"
-    dest_path = "/Users/alexandra/Documents/GitHub/dataset_creation/data/v5_mapillary_metadata_with_tags_NEW.csv"
+    absolute_path = "/Users/alexandra/Documents/GitHub/dataset_creation/data/v4_mapillary_metadata.csv"
+    dest_path = "/Users/alexandra/Documents/GitHub/dataset_creation/data/v4_mapillary_metadata_with_tags_NEW.csv"
 
-    create_metadata_csv(absolute_path)
-    to_db(absolute_path)
-    intersect_osm(absolute_path)
+    create_metadata_csv(absolute_path, ds_version="v4")
+    to_db(absolute_path, name = "v4new")
+    intersect_osm(absolute_path, name = "v4new")
 
     utils.save_sql_table_to_csv(
-        f"v5new_mapillary_meta",
+        f"v4new_mapillary_meta",
          dest_path
     )
 

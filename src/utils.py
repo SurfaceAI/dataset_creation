@@ -143,6 +143,31 @@ def get_images_metadata(tile):
     return (header, output)
 
 
+def get_metadata(image_id):
+    response = requests.get(
+        config.mapillary_graph_url.format(image_id),
+        params={
+            "fields": "captured_at,creator,geometry",
+            "access_token": access_tokens[current_token],
+        },
+    )
+
+    if response.status_code != 200:
+        print(response.status_code)
+        print(response.reason)
+        print(f"image_id: {image_id}")
+        return False
+    else:
+        data = response.json()
+        captured_at = data["captured_at"]
+        creator_id = data["creator"]["id"]
+        creator_name = data["creator"]["username"]
+        longitude = data["geometry"]["coordinates"][0]
+        latitude = data["geometry"]["coordinates"][1]
+        return [captured_at, creator_id, creator_name, longitude, latitude]
+
+
+
 def download_image(image_id, image_folder, image_size = None):
     """Download image file based on image_id and save to given image_folder
 
