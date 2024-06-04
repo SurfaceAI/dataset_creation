@@ -26,7 +26,7 @@ def test_load_mapillary_token(token_path):
 
 @pytest.fixture(scope="module")
 def access_token(token_path):
-    return mapillary_requests.load_mapillary_token(token_path=token_path)
+    return mapillary_requests.load_mapillary_tokens(token_path=token_path)[0]
 
 
 # TODO:

@@ -2,12 +2,15 @@ import sys
 
 import mercantile
 import pandas as pd
-import pytest
+
+import os
+import sys
+from pathlib import Path
 
 # setting path
-sys.path.append("./")
+sys.path.append(str(Path(os.path.abspath(__file__)).parent))
 
-import utils
+import src.utils as utils
 
 
 def test_tile_center():
@@ -16,7 +19,7 @@ def test_tile_center():
     assert round(lat_deg, 6) == 51.075919
 
 
-def get_tile_images():
+def test_get_tile_images():
     json = utils.get_tile_images(mercantile.tile(8500, 5480, 14))
     assert type(json) is dict
 
@@ -35,26 +38,6 @@ def test_get_images_metadata():
         "lat",
     ]
     assert type(output) is list
-
-
-def test_download_image():
-    # TODO: create temp folder and check if image was saved
-    pass
-
-
-def test_query_and_write_img_metadata():
-    # TODO: create temp folder and check if csv was saved
-    pass
-
-
-def test_intersect_mapillary_osm():
-    # TODO
-    pass
-
-
-def test_save_sql_table_to_csv():
-    # TODO
-    pass
 
 
 def test_clean_surface():

@@ -17,6 +17,9 @@ def load_mapillary_token(token_path=os.path.join(ROOT_DIR, "mapillary_token.txt"
 
     return access_token
 
+def load_mapillary_tokens(token_path=os.path.join(ROOT_DIR, "mapillary_token.txt")):
+    with open(token_path, "r") as file:
+        return [line.strip() for line in file.readlines()]
 
 # Bounding Box?
 
