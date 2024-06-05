@@ -8,9 +8,11 @@ from pathlib import Path
 sys.path.append(str(Path(os.path.abspath(__file__)).parent.parent.parent))
 
 import src.utils as utils
+import src.config as config
 
-v12 = pd.read_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/V12/metadata/annotations_combined.csv", dtype={"image_id": str})
-label_corrections = pd.read_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/img_label_corrections.csv", dtype={"image_id": str})
+
+v12 = pd.read_csv(os.path.join(config.cloud_image_folder, "training", "V12", "metadata", "annotations_combined.csv"), dtype={"image_id": str})
+label_corrections = pd.read_csv(os.path.join(config.cloud_image_folder, "training", "img_label_corrections.csv"), dtype={"image_id": str})
 
 # overwrite labels (TODO vectorize)
 for i, row in label_corrections.iterrows():
@@ -29,11 +31,11 @@ v1point0 = v12[["image_id", "surface", "smoothness", "roadtype", "train"]]
 
 ##################### add images from experiments ####################
 
-v101 = pd.read_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/automated_labeling_experiments/annotations_combined/V101.csv")
-v200 = pd.read_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/automated_labeling_experiments/annotations_combined/V200.csv")
+v101 = pd.read_csv(os.path.join(config.cloud_image_folder, "automated_labeling_experiments", "annotations_combined", "V101.csv"))
+v200 = pd.read_csv(os.path.join(config.cloud_image_folder, "automated_labeling_experiments", "annotations_combined", "V200.csv"))
 vexp = pd.concat([v101, v200])
 vexp["image_id"] = vexp.image.apply(lambda x: str.split(x, "/")[-1]).apply(
-        lambda x: int(str.split(x, ".jpg")[0])
+        lambda x: str.split(x, ".jpg")[0]
     )
 vexp.loc[vexp.nostreet.notna(), "surface"] = "nostreet"
 vexp.loc[vexp.nostreet.notna(), "smoothness"] = "nostreet"
@@ -62,7 +64,7 @@ test_cities = ["dresden", "munich", "cologne", "luenenburg", "heilbronn"]
 
 tc_data = pd.DataFrame()
 for test_city in test_cities:
-    test_city_path = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/test/{}/metadata/{}_annotations.csv"
+    test_city_path = os.path.join(config.cloud_image_folder, "test", "{}", "metadata", "{}_annotations.csv")
     tc = pd.read_csv(test_city_path.format(test_city, test_city))
     tc.rename({"surface": "surface_car", "smoothness": "smoothness_car"}, axis=1, inplace=True)
     tc = tc[tc.nostreet.isna()]
@@ -73,7 +75,7 @@ for test_city in test_cities:
     tc_data = pd.concat([tc_data, tc])
 
 tc_data["image_id"] = tc_data.image.apply(lambda x: str.split(x, "/")[-1]).apply(
-        lambda x: int(str.split(x, ".jpg")[0])
+        lambda x: str.split(x, ".jpg")[0]
     )
 tc_data["train"] = False
 # combine both datasets
@@ -86,6 +88,7 @@ v1point0.rename({"image_id": "mapillary_image_id", "surface": "surface_type", "s
 
 # make sure there are no duplicates
 v1point0.drop_duplicates("mapillary_image_id", inplace=True)
+# make sure all ids are strings
 v1point0.mapillary_image_id = v1point0.mapillary_image_id.astype(str)
 
 
@@ -93,7 +96,7 @@ v1point0.mapillary_image_id = v1point0.mapillary_image_id.astype(str)
 # download images in all resolutions and get metadata (user_id, user_name, captured_at, latitude, longitude)
 
 img_sizes = ["256", "1024", "2048", "original"]
-dest_folder = "/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/V1_0"
+dest_folder = os.path.join(config.cloud_image_folder, "V1_0")
 
 errors = []
 for img_size in img_sizes:
@@ -110,13 +113,13 @@ for img_size in img_sizes:
         if no_error == False:
             errors.append([img_id, img_size])
 
-pd.DataFrame(errors, columns=["mapillary_image_id", "img_size"]).to_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/V1_0/V1_0_errors.csv")
+pd.DataFrame(errors, columns=["mapillary_image_id", "img_size"]).to_csv(os.path.join(dest_folder, "V1_0_errors.csv"))
 
 errors = []
 metadata = []
 #### get additional metadata
 
-old_v1point0 = pd.read_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/V1_0/streetSurfaceVis_v1_0.csv", dtype={"mapillary_image_id": str})
+old_v1point0 = pd.read_csv(os.path.join(dest_folder, "streetSurfaceVis_v1_0.csv"), dtype={"mapillary_image_id": str})
 
 for img_id in tqdm(v1point0.mapillary_image_id.tolist()):
     if old_v1point0[old_v1point0.mapillary_image_id == img_id].shape[0] > 0:
@@ -132,14 +135,14 @@ for img_id in tqdm(v1point0.mapillary_image_id.tolist()):
 v1point0_metadata = v1point0.join(pd.DataFrame(metadata, columns = ["mapillary_image_id","captured_at","user_id","user_name","longitude","latitude"]).set_index("mapillary_image_id"), 
               on="mapillary_image_id")
 
-pd.DataFrame(errors, columns=["mapillary_image_id"]).to_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/V1_0/V1_0_errors_metadata.csv")
+pd.DataFrame(errors, columns=["mapillary_image_id"]).to_csv(os.path.join(dest_folder, "V1_0_errors_metadata.csv"))
 
 
 ##### remove all errors from dataset (csv) ####
-errors = pd.read_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/V1_0/V1_0_errors.csv", dtype={"mapillary_image_id": str})
+errors = pd.read_csv(os.path.join(dest_folder, "V1_0_errors.csv"), dtype={"mapillary_image_id": str})
 v1point0_metadata = v1point0_metadata[~v1point0_metadata.mapillary_image_id.isin(errors.mapillary_image_id)]
 
-errors = pd.read_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/V1_0/V1_0_errors_metadata.csv",  dtype={"mapillary_image_id": str})
+errors = pd.read_csv(os.path.join(dest_folder, "V1_0_errors_metadata.csv"),  dtype={"mapillary_image_id": str})
 v1point0_metadata = v1point0_metadata[~v1point0_metadata.mapillary_image_id.isin(errors.mapillary_image_id)]
 
 ########
@@ -147,19 +150,19 @@ v1point0_metadata = v1point0_metadata[~v1point0_metadata.mapillary_image_id.isin
 v1point0_metadata["user_id"] = v1point0_metadata["user_id"].astype(int)
 v1point0_metadata["captured_at"] = v1point0_metadata["captured_at"].astype(int)
 (v1point0_metadata[["mapillary_image_id", "user_id", "user_name", "captured_at", "longitude","latitude", "train", "surface_type", "surface_quality"]]
-        .to_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/V1_0/streetSurfaceVis_v1_0.csv", index=False)
+        .to_csv(os.path.join(dest_folder, "streetSurfaceVis_v1_0.csv"), index=False)
 )
 (
 v1point0_metadata[["mapillary_image_id", "user_id", "user_name", "captured_at", "longitude","latitude", "train", "surface_type", "surface_quality", "roadtype"]]
-        .to_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/V1_0/v1_0_incl_roadtype.csv", index=False)
+        .to_csv(os.path.join(dest_folder, "v1_0_incl_roadtype.csv"), index=False)
 )
 
 
 # remove any images from folders that are not within the dataset anymore
 
-v1point0 = pd.read_csv("/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/V1_0/v1_0.csv", dtype={"mapillary_image_id": str})
+v1point0 = pd.read_csv(os.path.join(dest_folder, "streetSurfaceVis_v1_0.csv"), dtype={"mapillary_image_id": str})
 image_ids = set(v1point0['mapillary_image_id'])
-img_folder = '/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/V1_0/{}'
+img_folder = os.path.join(dest_folder, "{}")
 sizes = ["256", "1024", "2048", "original"]
 
 for size in sizes:

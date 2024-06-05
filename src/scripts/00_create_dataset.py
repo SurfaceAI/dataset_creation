@@ -85,14 +85,7 @@ s6.prepare_manual_annotation(config.chunk_ids)
 output_version = "V7"
 input_versions = ["V4", "V5_c0", "V5_c1", "V5_c2"]
 root_path = os.path.join(
-    "/",
-    "Users",
-    "alexandra",
-    "Nextcloud-HTW",
-    "SHARED",
-    "SurfaceAI",
-    "data",
-    "mapillary_images",
+    config.cloud_image_folder,
     "training",
 )
 s7.create_image_folders(output_version, input_versions, root_path)

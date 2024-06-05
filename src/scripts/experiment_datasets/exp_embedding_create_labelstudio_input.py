@@ -58,7 +58,7 @@ for i in tqdm(range(len(df))):
 
 
 utils.crop_frame_for_img_folder(
-        f"/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/{img_folder}/embedding_selection/",
-        f"/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/{img_folder}/embedding_selection_crop",
+        f"{config.cloud_image_folder}/training/{img_folder}/embedding_selection/",
+        f"{config.cloud_image_folder}/training/{img_folder}/embedding_selection_crop",
     )
 

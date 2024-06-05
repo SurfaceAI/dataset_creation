@@ -45,8 +45,8 @@ s6.create_labelstudio_input_file(df[df.smoothness_clean == smoothness], is_testd
 
 # sort images
 # sanity check: sorted images according to predicted class
-origin_folder_path = f"/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/{img_folder}/osm_tagged"
-destination_path = f"/Users/alexandra/Nextcloud-HTW/SHARED/SurfaceAI/data/mapillary_images/training/{img_folder}/sorted/batch_{batch_id}"
+origin_folder_path = f"{config.cloud_image_folder}/training/{img_folder}/osm_tagged"
+destination_path = f"{config.cloud_image_folder}/training/{img_folder}/sorted/batch_{batch_id}"
 
 for i in tqdm(range(len(df))):
     img_pred = df.iloc[i]
