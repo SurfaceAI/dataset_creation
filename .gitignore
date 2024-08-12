@@ -1,6 +1,8 @@
 .vscode/*
 .DS_Store
 data/*
+cache/*
+data
 
 mapillary_token.txt
 database_credentials.py
