@@ -65,7 +65,7 @@ For each city, we aim to obtain a diverse dataset. We thus restrict
 
 We further remove images from the Autobahn, as they take up a larger share of images, however, we are interested in classifying urban regions. (Autobahn has typically good/excellent asphalt).
 
-We then sample 1,000 images per city.
+We then sample 200 images per city.
 
 ### Create training data
 For the training data, our aim is to intersect Mapillary images with OSM surface and smoothness tags and create a labeled dataset.
