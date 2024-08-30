@@ -2,38 +2,27 @@ import sys
 sys.path.append('.')
 
 import os
-import sys
 import pickle 
 
-import base64
-
-from collections import OrderedDict
-
-import time
 import pandas as pd
 import numpy as np 
 import random
 
-from PIL import Image
-from sentence_transformers import SentenceTransformer, util
-from torchvision import transforms
+from sentence_transformers import util
 import torch 
 
-import csv
-from collections import Counter
+import matplotlib.pyplot as plt
 
 import embedding_helpers
 
-import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc
-import numpy as np
 
-
-
-#config
+# config
 query_dataset = 'V12' # fixed
-embeddings_model_list = ['clip', 'dino', 'effnet']
-query_images_prefix = 'images_experiment_0_' # For experiment 0 only
+embeddings_model_list = [
+    'clip',
+    'dino',
+    'effnet',
+    ]
 embeddings_postfix = 'cropped_sim_embeddings.pkl'
 gpu_kernel = 0
 
@@ -55,14 +44,8 @@ experiments_list = [
 
 conditions_list = [
     {'surface_type': 'asphalt', 'surface_quality': 'bad'},
-    {'surface_type': 'asphalt', 'surface_quality': 'intermediate'},
-    {'surface_type': 'paving_stones', 'surface_quality': 'excellent'},
     {'surface_type': 'paving_stones', 'surface_quality': 'intermediate'},
     {'surface_type': 'paving_stones', 'surface_quality': 'bad'},
-    {'surface_type': 'asphalt', 'surface_quality': 'good'},
-    {'surface_type': 'asphalt', 'surface_quality': 'excellent'},
-    {'surface_type': 'paving_stones', 'surface_quality': 'good'},
-    
 ]
 
 
@@ -83,14 +66,10 @@ def search_dataset(query_embeddings, query_images, corpus_embeddings, corpus_ima
         hits = util.semantic_search(query_embedding, corpus_embeddings[non_duplicates], top_k=k+1)[0]
         if score_threshold is not None:
             hits = [hit for hit in hits if hit['score'] > score_threshold]
-        #if filter_type:
-            #[extract_type_and_quality_from_img_path(path) for path in hits
 
         files_scores = {corpus_images[non_duplicates].reset_index(drop=True)['image_id'][hit['corpus_id']]:hit['score'] for hit in hits}
         files_scores = pd.DataFrame(list(files_scores.items()), columns=['image_id', 'score'])
 
-
-        # current_search = search_by_single_embedding(query_embedding, corpus_embeddings[~corpus_images['image_id']==query_image['image_id']], score_threshold=score_threshold)
         results = pd.concat([results, files_scores], ignore_index=True)
 
     unique_results = results.loc[results.groupby('image_id')['score'].idxmax()].reset_index(drop=True)
@@ -115,18 +94,7 @@ def calculate_metrics(search_results, corpus_images, surface_quality, score_thre
     return TP_count, FP_count, TN_count, FN_count
     
 
-# %%
 def find_optimal_ROC_threshold(unique_search_results, corpus_images, surface_quality):
-    # results = search_dataset(df, condition, score_threshold)
-    
-    # unique_results_df = results.loc[results.groupby('image_id')['score'].idxmax()]
-
-    # unique_results = search_dataset(query_embeddings, query_images, corpus_embeddings, corpus_images)
-    # duplicate_counts = results.groupby('image_id').size()
-    # TODO: is 'duplictaes' / '_count' used?
-    # unique_results = unique_results.merge(duplicate_counts.to_frame(), left_on='image_id', right_index=True, suffixes=('', '_count'))
-    # unique_results.rename(columns={0: 'duplicates'}, inplace=True)
-    # unique_results.reset_index(drop=True, inplace=True)
 
     thresholds = np.linspace(0, 1, 40)
     tprs = []
@@ -135,8 +103,6 @@ def find_optimal_ROC_threshold(unique_search_results, corpus_images, surface_qua
     fps = []
     tns = []
     fns = []
-    # fpr = []
-    # tpr = []
     youdens_j = []
     f1 = []
     
@@ -151,14 +117,10 @@ def find_optimal_ROC_threshold(unique_search_results, corpus_images, surface_qua
         fps.append(FP)
         tns.append(TN)
         fns.append(FN)
-        # tpr.append(TPR)
-        # fpr.append(FPR)
         youdens_j.append(TPR - FPR)
         f1.append(F1)
-        # print(f'threshold: {threshold:.3f}, youdens_j: {TPR - FPR:.3f}')
     
-    # optimal_idx = np.argmax(youdens_j)
-    optimal_idx = np.argwhere(youdens_j == np.amax(youdens_j))
+    optimal_idx = np.argwhere(youdens_j == np.amax(youdens_j)) # optimal_idx = np.argmax(youdens_j)
     optimal_idx = optimal_idx.flatten().tolist()[0] # -1 alternative
     optimal_threshold = thresholds[optimal_idx]
     maxF1 = np.max(f1)
@@ -247,9 +209,7 @@ for experiment in experiments_list:
                 if experiment_name == 'experiment_1':
                     gpt_images_list = pd.read_csv(os.path.join(gpt_results_path, f'{experiment_name}_{corpus_dataset}_{surface_type}_{surface_quality}.csv'))
                     corpus_condition = corpus_images['image_id'].isin(gpt_images_list['image_id'].astype(str))
-                    # print(corpus_images.shape)
                     corpus_images = corpus_images[corpus_condition].reset_index(drop=True)
-                    # print(corpus_images.shape)
                     corpus_embeddings = corpus_embeddings[corpus_condition]
                 elif experiment_name == 'experiment_2':
                     is_batch_limit_reached = False
@@ -261,9 +221,7 @@ for experiment in experiments_list:
                     except:
                         break
                     corpus_condition = corpus_images['image_id'].isin(gpt_images_list['image_id'].astype(str))
-                    # print(corpus_images.shape)
                     corpus_images = corpus_images[corpus_condition].reset_index(drop=True)
-                    # print(corpus_images.shape)
                     corpus_embeddings = corpus_embeddings[corpus_condition]
 
                 if is_threshold_given:
@@ -298,17 +256,17 @@ for experiment in experiments_list:
                         results_list.append({'surface_type': surface_type,
                                             'surface_quality': surface_quality,
                                             'seed': seed,
-                                                        'optimal_threshold': optimal_threshold,
-                                                        'TP': TP,
-                                                        'FP': FP,
-                                                        'TN': TN,
-                                                        'FN': FN,
-                                                        'random_Precision': round((TP+FN) / (FP+TN), 3),
-                                                        'Precision': round(0.0 if TP == 0 else (TP / (TP + FP)), 3),
-                                                        'Recall': round(0.0 if TP == 0 else (TP / (TP + FN)), 3),
-                                                        'F1': round(0.0 if TP == 0 else (2 * TP / (2 * TP + FP + FN)), 3),
-                                                        'max_F1': round(maxF1, 3),
-                                                        })
+                                            'optimal_threshold': optimal_threshold,
+                                            'TP': TP,
+                                            'FP': FP,
+                                            'TN': TN,
+                                            'FN': FN,
+                                            'random_Precision': round((TP+FN) / (FP+TN), 3),
+                                            'Precision': round(0.0 if TP == 0 else (TP / (TP + FP)), 3),
+                                            'Recall': round(0.0 if TP == 0 else (TP / (TP + FN)), 3),
+                                            'F1': round(0.0 if TP == 0 else (2 * TP / (2 * TP + FP + FN)), 3),
+                                            'max_F1': round(maxF1, 3),
+                                            })
 
                         if not os.path.exists(results_path):
                             os.makedirs(results_path)
@@ -328,10 +286,3 @@ for experiment in experiments_list:
 
                 if is_batch_limit_reached:
                     break
-                    
-
-        
-
-                    
-
-

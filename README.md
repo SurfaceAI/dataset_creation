@@ -342,4 +342,12 @@ To find additional images for underrepresented classes, you can use the image pr
 
 ### Similarity Search
 
-TODO
+Similarity search is another method to find additional images for underrepresented classes.
+
+1. [Embed images](src/scripts/embedding_experiments/images_embedding.py): Config the images file and the model to embed the images. To use a model trained on this dataset, use [the classification_models repository and the branch 'dataset_evaluation'][classification_models] to train the model.
+2. [Similarity search with embeddings](src/scripts/embedding_experiments/embedding_image_annotation.py): Three experiments are implemented per model embeddings. (0) annotated images are used to find an optimal threshold for similarity search. (1, 2) images without labels are pre-labeld by their embeddings using the optimal threshold. They are filtered by the images used in the GPT-4 experiments for comparison only.
+
+Note: Adapt or link the paths to match your folder structure.
+
+
+[classification_models]: https://github.com/SurfaceAI/classification_models/tree/dataset_evaluation
