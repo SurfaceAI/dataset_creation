@@ -15,8 +15,6 @@ Kapp, A., Hoffmann, E., Weigmann, E., & Mihaljevic, H. (2024). StreetSurfaceVis:
 ### Mappillary Token
 
 - a file `mapillary_token.txt` needs to be created that holds the Mapillary access token for the API and is placed in the root folder of this repo.
-As Mapillary has a rate limit, there are two tokens expected in the `mapillary_token.txt` which are rotated when the limit is reached.
-
 
 ### OSM database
 
