@@ -6,9 +6,35 @@ This data can be used for training of classifiers of road surface type and quali
 
 **The final dataset is published [here](https://zenodo.org/records/11449977).**
 
-If you use this dataset, please cite as:
+If you use this dataset, please cite the corresponding publication:
 
-Kapp, A., Hoffmann, E., Weigmann, E., & Mihaljevic, H. (2024). StreetSurfaceVis: a dataset of street-level imagery with annotations of road surface type and quality (V1.0) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.11449977
+    @misc{kapp2024streetsurfacevisdatasetcrowdsourcedstreetlevel,
+          title={StreetSurfaceVis: a dataset of crowdsourced street-level imagery with semi-automated annotations of road surface type and quality}, 
+          author={Alexandra Kapp and Edith Hoffmann and Esther Weigmann and Helena Mihaljević},
+          year={2024},
+          eprint={2407.21454},
+          archivePrefix={arXiv},
+          primaryClass={cs.CV},
+          url={https://arxiv.org/abs/2407.21454}, 
+    }
+
+The dataset resource may additionally be cited as: 
+
+    @dataset{kapp_2024_11449977,
+      author       = {Kapp, Alexandra and
+                      Hoffmann, Edith and
+                      Weigmann, Esther and
+                      Mihaljevic, Helena},
+      title        = {{StreetSurfaceVis: a dataset of street-level 
+                       imagery with annotations of road surface type and
+                       quality}},
+      month        = jun,
+      year         = 2024,
+      publisher    = {Zenodo},
+      version      = {V1.0},
+      url          = {https://doi.org/10.5281/zenodo.11449977},
+      howpublished =  {\emph{zenodo} \url{https://doi.org/10.5281/zenodo.11449977}}
+    }
 
 ## Prerequisites
 
