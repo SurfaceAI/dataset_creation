@@ -6,17 +6,41 @@ This data can be used for training of classifiers of road surface type and quali
 
 **The final dataset is published [here](https://zenodo.org/records/11449977).**
 
-If you use this dataset, please cite as:
+If you use this dataset, please cite the corresponding publication:
 
-Kapp, A., Hoffmann, E., Weigmann, E., & Mihaljevic, H. (2024). StreetSurfaceVis: a dataset of street-level imagery with annotations of road surface type and quality (V1.0) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.11449977
+    @misc{kapp2024streetsurfacevisdatasetcrowdsourcedstreetlevel,
+          title={StreetSurfaceVis: a dataset of crowdsourced street-level imagery with semi-automated annotations of road surface type and quality}, 
+          author={Alexandra Kapp and Edith Hoffmann and Esther Weigmann and Helena Mihaljević},
+          year={2024},
+          eprint={2407.21454},
+          archivePrefix={arXiv},
+          primaryClass={cs.CV},
+          url={https://arxiv.org/abs/2407.21454}, 
+    }
+
+The dataset resource may additionally be cited as: 
+
+    @dataset{kapp_2024_11449977,
+      author       = {Kapp, Alexandra and
+                      Hoffmann, Edith and
+                      Weigmann, Esther and
+                      Mihaljevic, Helena},
+      title        = {{StreetSurfaceVis: a dataset of street-level 
+                       imagery with annotations of road surface type and
+                       quality}},
+      month        = jun,
+      year         = 2024,
+      publisher    = {Zenodo},
+      version      = {V1.0},
+      url          = {https://doi.org/10.5281/zenodo.11449977},
+      howpublished =  {\emph{zenodo} \url{https://doi.org/10.5281/zenodo.11449977}}
+    }
 
 ## Prerequisites
 
 ### Mappillary Token
 
 - a file `mapillary_token.txt` needs to be created that holds the Mapillary access token for the API and is placed in the root folder of this repo.
-As Mapillary has a rate limit, there are two tokens expected in the `mapillary_token.txt` which are rotated when the limit is reached.
-
 
 ### OSM database
 
@@ -65,7 +89,7 @@ For each city, we aim to obtain a diverse dataset. We thus restrict
 
 We further remove images from the Autobahn, as they take up a larger share of images, however, we are interested in classifying urban regions. (Autobahn has typically good/excellent asphalt).
 
-We then sample 1,000 images per city.
+We then sample 200 images per city.
 
 ### Create training data
 For the training data, our aim is to intersect Mapillary images with OSM surface and smoothness tags and create a labeled dataset.
@@ -342,4 +366,12 @@ To find additional images for underrepresented classes, you can use the image pr
 
 ### Similarity Search
 
-TODO
+Similarity search is another method to find additional images for underrepresented classes.
+
+1. [Embed images](src/scripts/embedding_experiments/images_embedding.py): Config the images file and the model to embed the images. To use a model trained on this dataset, use [the classification_models repository and the branch 'dataset_evaluation'][classification_models] to train the model.
+2. [Similarity search with embeddings](src/scripts/embedding_experiments/embedding_image_annotation.py): Three experiments are implemented per model embeddings. (0) annotated images are used to find an optimal threshold for similarity search. (1, 2) images without labels are pre-labeld by their embeddings using the optimal threshold. They are filtered by the images used in the GPT-4 experiments for comparison only.
+
+Note: Adapt or link the paths to match your folder structure.
+
+
+[classification_models]: https://github.com/SurfaceAI/classification_models/tree/dataset_evaluation

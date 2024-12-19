@@ -3,6 +3,11 @@
 data/*
 cache/*
 data
+embeddings
+gpt
+trained_models
+visualizations
+wandb
 
 mapillary_token.txt
 database_credentials.py
