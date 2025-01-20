@@ -8,14 +8,19 @@ This data can be used for training of classifiers of road surface type and quali
 
 If you use this dataset, please cite the corresponding publication:
 
-    @misc{kapp2024streetsurfacevisdatasetcrowdsourcedstreetlevel,
-          title={StreetSurfaceVis: a dataset of crowdsourced street-level imagery with semi-automated annotations of road surface type and quality}, 
-          author={Alexandra Kapp and Edith Hoffmann and Esther Weigmann and Helena Mihaljević},
-          year={2024},
-          eprint={2407.21454},
-          archivePrefix={arXiv},
-          primaryClass={cs.CV},
-          url={https://arxiv.org/abs/2407.21454}, 
+    @article{Kapp2025,
+      title = {StreetSurfaceVis: a dataset of crowdsourced street-level imagery annotated by road surface type and quality},
+      volume = {12},
+      ISSN = {2052-4463},
+      url = {http://dx.doi.org/10.1038/s41597-024-04295-9},
+      DOI = {10.1038/s41597-024-04295-9},
+      number = {1},
+      journal = {Scientific Data},
+      publisher = {Springer Science and Business Media LLC},
+      author = {Kapp,  Alexandra and Hoffmann,  Edith and Weigmann,  Esther and Mihaljević,  Helena},
+      year = {2025},
+      month = jan,
+      pages = {92}, 
     }
 
 The dataset resource may additionally be cited as: 
