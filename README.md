@@ -116,13 +116,13 @@ For the training data, our aim is to intersect Mapillary images with OSM surface
   - from remaining images, images are selected to certain criteria (again, they evolved over different versions - see below )
   - note, that this step requires output from a classification model which is not part of this repository
 
-- **[Step 5](/scripts/ds_creation_steps/s5_download_train_images.py): download train images**
+- **[Step 5](/src/scripts/ds_creation_steps/s5_download_train_images.py): download train images**
   - download selected images from Mapillary 
 
-- **[Step 6](/scripts/ds_creation_steps/s6_prepare_manual_annotation.py): prepare manual annotation**
+- **[Step 6](/src/scripts/ds_creation_steps/s6_prepare_manual_annotation.py): prepare manual annotation**
   - for manual annotation in Labelstudio, required files are prepared and sorted according to the number of annotators and batch sizes (data is annotated iteratively)
 
-- **[Step 7](/scripts/ds_creation_steps/s7_prepare_image_folders.py): prepare image folders**
+- **[Step 7](/src/scripts/ds_creation_steps/s7_prepare_image_folders.py): prepare image folders**
   - after data has been annotated, image folders are created according to the labels
 
 To catch annotation errors, there are additionally:
